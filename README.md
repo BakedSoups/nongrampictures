@@ -45,6 +45,19 @@ The solution strings define filled cells: `1` is filled and `0` is empty. Row an
 
 For the MVP, `cmd/game/main.go` loads `assets/puzzles/test_001/puzzle.json`. Change that path to test another puzzle.
 
+You can also generate a puzzle from pixel art:
+
+```sh
+go run ./cmd/pixelpuzzle \
+  -id l1 \
+  -title "Level 1" \
+  -source levels/L1-cactus.png \
+  -reveal levels/L1-cactus-reveal.png \
+  -out assets/puzzles/l1
+```
+
+Transparent pixels become empty cells. If the PNG is fully opaque, the helper treats pixels matching the top-left color as empty.
+
 ## Replace Art
 
 Replace these files with same-name PNGs:

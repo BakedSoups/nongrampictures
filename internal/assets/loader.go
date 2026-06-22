@@ -14,7 +14,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
-//go:embed embedded/assets/puzzles/test_001/* embedded/assets/ui/*
+//go:embed embedded/assets/puzzles/test_001/* embedded/assets/puzzles/l1/* embedded/assets/ui/*
 var embeddedFiles embed.FS
 
 type PuzzleAssets struct {
