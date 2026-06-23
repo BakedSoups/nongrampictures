@@ -1,4 +1,4 @@
-game
+/game
 *.wasm
 *.exe
 *.test

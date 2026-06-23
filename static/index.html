@@ -91,6 +91,23 @@
       document.getElementById("status").textContent = err;
       console.error(err);
     });
+
+    if (["localhost", "127.0.0.1"].includes(window.location.hostname)) {
+      let wasmVersion = "";
+      setInterval(async () => {
+        try {
+          const response = await fetch("game.wasm", { method: "HEAD", cache: "no-store" });
+          const nextVersion = `${response.headers.get("last-modified")}:${response.headers.get("content-length")}`;
+          if (!wasmVersion) {
+            wasmVersion = nextVersion;
+          } else if (nextVersion && nextVersion !== wasmVersion) {
+            window.location.reload();
+          }
+        } catch {
+          // Dev-only polling should never interrupt gameplay.
+        }
+      }, 1200);
+    }
   </script>
 </body>
 </html>

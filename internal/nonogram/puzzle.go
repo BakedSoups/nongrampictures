@@ -8,13 +8,15 @@ import (
 )
 
 type Puzzle struct {
-	ID          string   `json:"id"`
-	Title       string   `json:"title"`
-	Width       int      `json:"width"`
-	Height      int      `json:"height"`
-	SolutionRaw []string `json:"solution"`
-	SkeletonArt string   `json:"skeletonArt"`
-	RevealArt   string   `json:"revealArt"`
+	ID          string     `json:"id"`
+	Title       string     `json:"title"`
+	Width       int        `json:"width"`
+	Height      int        `json:"height"`
+	SolutionRaw []string   `json:"solution"`
+	SkeletonArt string     `json:"skeletonArt,omitempty"`
+	RevealArt   string     `json:"revealArt,omitempty"`
+	SkeletonRaw [][]string `json:"skeletonPixels,omitempty"`
+	RevealRaw   [][]string `json:"revealPixels,omitempty"`
 
 	Solution [][]bool `json:"-"`
 }
