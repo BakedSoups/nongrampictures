@@ -281,7 +281,7 @@ func (g *Game) drawCommunityPacks(screen *ebiten.Image) {
 		}
 		drawText(screen, packStatus, int(r.x+10), int(r.y+58), colAccent)
 		for art, item := range pack.Items {
-			if art >= 32 {
+			if art >= community.MaxPackItems {
 				break
 			}
 			draft, ok := g.communityLibrary.Draft(item.LevelID)
@@ -565,38 +565,6 @@ func profileColorInitial(value string) string {
 	return "#A35A4D"
 }
 
-func drawPaletteChoiceButton(screen *ebiten.Image, r rect, palette string, selected bool) {
-	registerButtonRect(r)
-	fill := colWhite
-	if selected {
-		fill = colPanel
-	}
-	drawRounded(screen, r, 5, fill)
-	outline := colGrid
-	if selected {
-		outline = colAccent
-	}
-	drawRectOutline(screen, r, 3, outline)
-	colors := profilePaletteSwatches(palette)
-	for index, c := range colors {
-		sw := rect{x: r.x + 8 + float64(index)*12, y: r.y + 9, w: 10, h: 10}
-		drawRounded(screen, sw, 1, c)
-	}
-}
-
-func profilePaletteSwatches(palette string) []color.RGBA {
-	switch palette {
-	case "space":
-		return []color.RGBA{{14, 18, 27, 255}, {43, 100, 101, 255}, {116, 62, 80, 255}}
-	case "candy":
-		return []color.RGBA{{235, 107, 86, 255}, {244, 201, 93, 255}, {199, 102, 164, 255}}
-	case "mono":
-		return []color.RGBA{{45, 45, 43, 255}, {112, 107, 96, 255}, {239, 235, 220, 255}}
-	default:
-		return []color.RGBA{{163, 90, 77, 255}, {75, 143, 140, 255}, {244, 201, 93, 255}}
-	}
-}
-
 func drawSocialField(screen *ebiten.Image, r rect, value string, active bool) {
 	drawRounded(screen, r, 4, colPanel)
 	outline := colGridHeavy
@@ -820,7 +788,7 @@ func (g *Game) drawAccountCompletedLevels(screen *ebiten.Image) {
 }
 
 func (g *Game) drawCommunityPackBuilder(screen *ebiten.Image) {
-	drawCenteredText(screen, fmt.Sprintf("SELECT ART  %d/32", len(g.packSelection)), rect{x: 80, y: 204, w: 380, h: 32}, colInk)
+	drawCenteredText(screen, fmt.Sprintf("SELECT ART  %d/%d", len(g.packSelection), community.MaxPackItems), rect{x: 80, y: 204, w: 380, h: 32}, colInk)
 	start := g.communityPage * communityPackDraftsPerPage
 	if start >= len(g.communityLibrary.Drafts) {
 		drawCenteredText(screen, "Create some art first", rect{x: 80, y: 360, w: 380, h: 30}, colMuted)
@@ -1147,7 +1115,7 @@ func (g *Game) drawCommunityPublishedEdit(screen *ebiten.Image) {
 				drawText(screen, truncateText(level.Title, 18), int(r.x+50), int(r.y+28), colInk)
 				drawButton(screen, communityPublishedEditLevelRemoveButton(slot), "x")
 			}
-			drawButton(screen, communityPublishedEditAddLevelButton(), fmt.Sprintf("add art  %d/32", len(g.publishedEditLevels)))
+			drawButton(screen, communityPublishedEditAddLevelButton(), fmt.Sprintf("add art  %d/%d", len(g.publishedEditLevels), community.MaxPackItems))
 		} else if item.Puzzle != nil {
 			drawText(screen, "Before", 124, 260, colMuted)
 			drawText(screen, "After", 308, 260, colMuted)
@@ -1171,7 +1139,7 @@ func (g *Game) drawCommunityPublishedEdit(screen *ebiten.Image) {
 }
 
 func (g *Game) drawCommunityPublishedPackAdd(screen *ebiten.Image) {
-	drawCenteredText(screen, fmt.Sprintf("ADD ART TO PACK  %d/32", len(g.publishedEditLevels)), rect{x: 80, y: 204, w: 380, h: 32}, colInk)
+	drawCenteredText(screen, fmt.Sprintf("ADD ART TO PACK  %d/%d", len(g.publishedEditLevels), community.MaxPackItems), rect{x: 80, y: 204, w: 380, h: 32}, colInk)
 	used := make(map[string]bool, len(g.publishedEditLevels))
 	for _, level := range g.publishedEditLevels {
 		used[level.LocalID] = true

@@ -340,8 +340,8 @@ func (g *Game) openPublishedPackAdd() {
 	if g.publishedEditKind != "pack" {
 		return
 	}
-	if len(g.publishedEditLevels) >= 32 {
-		g.showCommunityNotice("packs can have up to 32 levels")
+	if len(g.publishedEditLevels) >= community.MaxPackItems {
+		g.showCommunityNotice(fmt.Sprintf("packs can have up to %d levels", community.MaxPackItems))
 		return
 	}
 	g.communityPage = 0
@@ -415,8 +415,8 @@ func (g *Game) removePublishedEditPackLevel(index int) {
 }
 
 func (g *Game) addPublishedEditPackLevel() {
-	if len(g.publishedEditLevels) >= 32 {
-		g.showCommunityNotice("packs can have up to 32 levels")
+	if len(g.publishedEditLevels) >= community.MaxPackItems {
+		g.showCommunityNotice(fmt.Sprintf("packs can have up to %d levels", community.MaxPackItems))
 		return
 	}
 	g.openPublishedPackAdd()
@@ -426,8 +426,8 @@ func (g *Game) addPublishedEditPackDraft(index int) {
 	if index < 0 || index >= len(g.communityLibrary.Drafts) {
 		return
 	}
-	if len(g.publishedEditLevels) >= 32 {
-		g.showCommunityNotice("packs can have up to 32 levels")
+	if len(g.publishedEditLevels) >= community.MaxPackItems {
+		g.showCommunityNotice(fmt.Sprintf("packs can have up to %d levels", community.MaxPackItems))
 		return
 	}
 	used := make(map[string]bool, len(g.publishedEditLevels))
@@ -966,8 +966,8 @@ func (g *Game) togglePackDraft(index int) {
 		return
 	}
 	id := g.communityLibrary.Drafts[index].ID
-	if !g.packSelection[id] && len(g.packSelection) >= 32 {
-		g.showCommunityNotice("packs can contain up to 32 levels")
+	if !g.packSelection[id] && len(g.packSelection) >= community.MaxPackItems {
+		g.showCommunityNotice(fmt.Sprintf("packs can contain up to %d levels", community.MaxPackItems))
 		return
 	}
 	if g.packSelection[id] {

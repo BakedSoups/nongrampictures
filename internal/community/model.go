@@ -9,6 +9,8 @@ import (
 	"github.com/BakedSoups/community_nongrams/internal/nonogram"
 )
 
+const MaxPackItems = 32
+
 type Visibility string
 
 const (
@@ -266,8 +268,8 @@ func (p Pack) Validate() error {
 	if strings.TrimSpace(p.Title) == "" {
 		return errors.New("pack title is required")
 	}
-	if len(p.Items) < 1 || len(p.Items) > 20 {
-		return errors.New("packs must contain 1 to 20 levels")
+	if len(p.Items) < 1 || len(p.Items) > MaxPackItems {
+		return fmt.Errorf("packs must contain 1 to %d levels", MaxPackItems)
 	}
 	seen := make(map[string]bool, len(p.Items))
 	for index, item := range p.Items {

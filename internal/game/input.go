@@ -1238,34 +1238,6 @@ func socialPlatform(value string) string {
 	}
 }
 
-var profilePaletteOptions = []string{"classic", "space", "candy", "mono"}
-
-var profileColorOptions = []string{"#A35A4D", "#4B8F8C", "#F4C95D", "#566F86", "#2D2D2B", "#EB6B56", "#C766A4", "#FFFFFF", "#000000"}
-
-func nextProfilePalette(current string) string {
-	if current == "" {
-		return profilePaletteOptions[0]
-	}
-	for index, value := range profilePaletteOptions {
-		if value == current {
-			return profilePaletteOptions[(index+1)%len(profilePaletteOptions)]
-		}
-	}
-	return profilePaletteOptions[0]
-}
-
-func nextProfileColor(current string) string {
-	if current == "" {
-		return profileColorOptions[0]
-	}
-	for index, value := range profileColorOptions {
-		if strings.EqualFold(value, current) {
-			return profileColorOptions[(index+1)%len(profileColorOptions)]
-		}
-	}
-	return profileColorOptions[0]
-}
-
 func normalizeProfileSocialLink(value string) (string, bool) {
 	lower := strings.ToLower(strings.TrimSpace(value))
 	lower = strings.TrimPrefix(lower, "https://")

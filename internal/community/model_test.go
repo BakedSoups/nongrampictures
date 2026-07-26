@@ -1,6 +1,7 @@
 package community
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/BakedSoups/community_nongrams/internal/nonogram"
@@ -51,6 +52,26 @@ func TestFullyFilledArtworkCanPublish(t *testing.T) {
 	draft := NewDraft("level-1", puzzle)
 	if err := draft.ValidateForPublish(); err != nil {
 		t.Fatal(err)
+	}
+}
+
+func TestPackValidationAllowsMaxPackItems(t *testing.T) {
+	pack := Pack{Title: "Big Pack", Items: make([]PackItem, MaxPackItems)}
+	for i := range pack.Items {
+		pack.Items[i] = PackItem{LevelID: fmt.Sprintf("level-%d", i)}
+	}
+	if err := pack.Validate(); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestPackValidationRejectsTooManyItems(t *testing.T) {
+	pack := Pack{Title: "Too Big", Items: make([]PackItem, MaxPackItems+1)}
+	for i := range pack.Items {
+		pack.Items[i] = PackItem{LevelID: fmt.Sprintf("level-%d", i)}
+	}
+	if err := pack.Validate(); err == nil {
+		t.Fatal("oversized pack passed validation")
 	}
 }
 

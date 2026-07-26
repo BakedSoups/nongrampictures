@@ -403,7 +403,7 @@ declare
 begin
 	if uid is null then raise exception 'Sign in before publishing'; end if;
 	if trim(p_title) = '' or char_length(p_title) > 80 then raise exception 'Pack title must be 1 to 80 characters'; end if;
-	if coalesce(cardinality(p_level_local_ids), 0) not between 1 and 20 then raise exception 'Packs must contain 1 to 20 levels'; end if;
+	if coalesce(cardinality(p_level_local_ids), 0) not between 1 and 32 then raise exception 'Packs must contain 1 to 32 levels'; end if;
 	if (select count(distinct value) from unnest(p_level_local_ids) value) <> cardinality(p_level_local_ids) then raise exception 'A level can appear only once'; end if;
 
 	insert into public.packs (owner_id, title, description) values (uid, trim(p_title), coalesce(p_description, '')) returning * into target_pack;
@@ -454,7 +454,7 @@ declare
 begin
   if uid is null then raise exception 'Sign in before publishing'; end if;
   if trim(p_title) = '' or char_length(p_title) > 80 then raise exception 'Pack title must be 1 to 80 characters'; end if;
-  if jsonb_typeof(p_levels) <> 'array' or jsonb_array_length(p_levels) not between 1 and 20 then raise exception 'Packs must contain 1 to 20 levels'; end if;
+  if jsonb_typeof(p_levels) <> 'array' or jsonb_array_length(p_levels) not between 1 and 32 then raise exception 'Packs must contain 1 to 32 levels'; end if;
   if (select count(distinct value->>'id') from jsonb_array_elements(p_levels) value) <> jsonb_array_length(p_levels) then raise exception 'A level can appear only once'; end if;
 
   insert into public.packs (owner_id, title, description)
@@ -889,8 +889,8 @@ begin
     if previous_pack_version.id is null then raise exception 'Published pack not found'; end if;
 
     if p_levels is not null then
-      if jsonb_typeof(p_levels) <> 'array' or jsonb_array_length(p_levels) not between 1 and 20 then
-        raise exception 'Packs must contain 1 to 20 levels';
+      if jsonb_typeof(p_levels) <> 'array' or jsonb_array_length(p_levels) not between 1 and 32 then
+        raise exception 'Packs must contain 1 to 32 levels';
       end if;
       if (select count(distinct value->>'id') from jsonb_array_elements(p_levels) value) <> jsonb_array_length(p_levels) then
         raise exception 'A level can appear only once';
