@@ -154,6 +154,10 @@ func takeCommunityImport() string {
 	return callJSString("takeCommunityImport", "")
 }
 
+func takeCommunityImportError() string {
+	return callJSString("takeCommunityImportError", "")
+}
+
 func requestCommunitySignIn(email string) bool {
 	return callJS("requestCommunitySignIn", email)
 }
@@ -308,18 +312,6 @@ func requestEditorColorPicker(initial string) bool {
 
 func takeEditorColorPicker() string {
 	return callJSString("takeEditorColorPicker", "")
-}
-
-func requestEditorTitle(current string) bool {
-	return callJS("requestEditorTitle", current)
-}
-
-func takeEditorTitle() string {
-	return callJSString("takeEditorTitle", "")
-}
-
-func clearEditorTitle() {
-	callJS("clearEditorTitle")
 }
 
 func requestCommunityCoverImport(size int) bool {

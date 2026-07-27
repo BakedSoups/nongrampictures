@@ -40,6 +40,8 @@ func requestCommunityImport(int, bool) bool { return false }
 
 func takeCommunityImport() string { return "" }
 
+func takeCommunityImportError() string { return "" }
+
 func requestCommunitySignIn(string) bool { return false }
 
 func requestCommunitySignOut() bool { return false }
@@ -131,12 +133,6 @@ func requestEditorColorPicker(string) bool {
 func takeEditorColorPicker() string {
 	return ""
 }
-
-func requestEditorTitle(string) bool { return false }
-
-func takeEditorTitle() string { return "" }
-
-func clearEditorTitle() {}
 
 func requestCommunityCoverImport(int) bool { return false }
 

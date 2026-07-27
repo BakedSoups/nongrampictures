@@ -417,7 +417,6 @@ func (g *Game) resetEditor(size int) {
 }
 
 func (g *Game) saveEditor() {
-	clearEditorTitle()
 	if g.saveCurrentDraft(false) == nil {
 		g.showMenuNotice("saved")
 		return
@@ -426,7 +425,6 @@ func (g *Game) saveEditor() {
 }
 
 func (g *Game) exportEditor() {
-	clearEditorTitle()
 	if exportEditorImage("community_nongrams-art.jpg", g.editor.imageExportJSON()) {
 		g.showMenuNotice("exported")
 		return

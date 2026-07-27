@@ -316,6 +316,9 @@ func (g *Game) updateCommunityInput() {
 			g.showCommunityNotice("import failed: " + err.Error())
 		}
 	}
+	if message := takeCommunityImportError(); message != "" {
+		g.showCommunityNotice("import failed: " + message)
+	}
 	if raw := takeCommunityCoverImport(); raw != "" {
 		var preview [][]string
 		if json.Unmarshal([]byte(raw), &preview) == nil {
@@ -1019,12 +1022,6 @@ func (g *Game) updateEditorInput() {
 	if g.editorTitleEditing {
 		g.updateEditorTitleInput()
 		return
-	}
-	if title := takeEditorTitle(); title != "" {
-		if !isEditorNoticeText(title) {
-			g.editor.Title = title
-			_ = g.saveCurrentDraft(false)
-		}
 	}
 	if raw := takeEditorColorPicker(); raw != "" {
 		if c, ok := parseEditorHexColor(raw); ok {

@@ -134,8 +134,8 @@
     window.__pendingEditorImageImport = "";
     window.__pendingEditorPackImport = "";
     window.__pendingEditorColor = "";
-	window.__pendingEditorTitle = "";
 	window.__pendingCommunityImport = "";
+	window.__pendingCommunityImportError = "";
 	window.__pendingCommunityResult = "";
 	window.__pendingCommunityCatalog = "";
 	window.__pendingCommunityCloudDrafts = "";
@@ -720,6 +720,11 @@
 	  window.__pendingCommunityImport = "";
 	  return raw;
 	};
+	window.takeCommunityImportError = () => {
+	  const message = window.__pendingCommunityImportError || "";
+	  window.__pendingCommunityImportError = "";
+	  return message;
+	};
 	const readImageFile = (file) => new Promise((resolve, reject) => {
 	  const image = new Image();
 	  image.onload = () => {
@@ -843,13 +848,13 @@
 	        }
 	      }
 	      if (!levels.length) throw new Error("No valid Before/After pairs found. Aseprite frame names must end in _before and _after.");
-	      window.__pendingCommunityImport = JSON.stringify({ id: `import_${Date.now()}`, title: imageFile.name, author: "local", version: 1, levels });
-	    } catch (error) {
-	      alert(error.message || "Import failed");
-	    }
-	  };
-	  input.click();
-	};
+		      window.__pendingCommunityImport = JSON.stringify({ id: `import_${Date.now()}`, title: imageFile.name, author: "local", version: 1, levels });
+		    } catch (error) {
+		      window.__pendingCommunityImportError = error.message || "Import failed";
+		    }
+		  };
+		  input.click();
+		};
     window.requestEditorColorPicker = (initial) => {
       const input = document.createElement("input");
       input.type = "color";
@@ -900,19 +905,7 @@
 	  };
 	  input.click();
 	};
-	window.takeEditorTitle = () => {
-	  const title = window.__pendingEditorTitle || "";
-	  window.__pendingEditorTitle = "";
-	  return title;
-	};
-	window.clearEditorTitle = () => {
-	  window.__pendingEditorTitle = "";
-	};
-	window.requestEditorTitle = (current) => {
-	  const title = prompt("Drawing title:", current || "Untitled");
-	  if (title && title.trim()) window.__pendingEditorTitle = title.trim().slice(0, 80);
-	};
-    window.requestEditorPackImport = () => {
+		window.requestEditorPackImport = () => {
       const input = document.createElement("input");
       input.type = "file";
       input.accept = "application/json,.json";
