@@ -47,7 +47,7 @@
   </style>
 </head>
 <body>
-  <div id="status">Loading...</div>
+  <div id="status">Loading game...</div>
   <textarea id="clipboard" aria-hidden="true" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></textarea>
   <script src="config.js" onerror="this.remove()"></script>
   <script src="howler.min.js"></script>
@@ -57,35 +57,42 @@
       src: ["audio/tunetank-lounge-jazz-elevator-music-348999.mp3"],
       loop: true,
       volume: 0.35,
-      html5: true
+      html5: true,
+      preload: false
     });
     const communityMusic = new Howl({
       src: ["audio/ikoliks_aj-lounge-elevator-music-332339.mp3"],
       loop: true,
       volume: 0.35,
-      html5: true
+      html5: true,
+      preload: false
     });
     let activeMusic = defaultMusic;
     const sfx = {
       menu: new Howl({
         src: ["audio/irinairinafomicheva-start-13691.mp3"],
-        volume: 0.65
+        volume: 0.65,
+        preload: false
       }),
       pencil: new Howl({
         src: ["audio/u_o8xh7gwsrj-app_interface_click_2-476372.mp3"],
-        volume: 0.65
+        volume: 0.65,
+        preload: false
       }),
       eraser: new Howl({
         src: ["audio/audley_fergine-ui-button-click-5-327756.mp3"],
-        volume: 0.65
+        volume: 0.65,
+        preload: false
       }),
       correct: new Howl({
         src: ["audio/liecio-menu_beep_accept_soft-533780.mp3"],
-        volume: 0.8
+        volume: 0.8,
+        preload: false
       }),
       complete: new Howl({
         src: ["audio/koiroylers-awesome-level-up-351714.mp3"],
-        volume: 0.85
+        volume: 0.85,
+        preload: false
       })
     };
     window.setMusicMuted = (muted) => Howler.mute(muted);
