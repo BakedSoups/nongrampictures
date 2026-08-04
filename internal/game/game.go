@@ -108,6 +108,7 @@ type Game struct {
 	selectedCreator          int
 	communityPlayReturn      communityView
 	communityGallery         []community.GalleryItem
+	communityGalleryLoading  bool
 	communityPublished       []community.GalleryItem
 	communityCompleted       []community.GalleryItem
 	communityChatMessages    []community.ChatMessage

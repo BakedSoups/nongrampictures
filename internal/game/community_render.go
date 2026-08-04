@@ -79,6 +79,13 @@ func (g *Game) drawCommunityBrowse(screen *ebiten.Image) {
 	drawSelectedButton(screen, communityGalleryArtButton(), "Art", g.galleryKind == "art")
 	drawSelectedButton(screen, communityGalleryPacksButton(), "Packs", g.galleryKind == "pack")
 	drawSelectedButton(screen, communityGallerySortButton(), communityGallerySortLabel(g.gallerySort), g.gallerySortOpen)
+	if g.communityGalleryLoading {
+		drawCenteredText(screen, "loading art...", rect{x: 60, y: 346, w: 420, h: 40}, colMuted)
+		if g.gallerySortOpen {
+			drawCommunitySortMenu(screen, g.gallerySort)
+		}
+		return
+	}
 	if len(g.communityGallery) == 0 {
 		drawCenteredText(screen, "No published work yet", rect{x: 60, y: 346, w: 420, h: 40}, colMuted)
 		if g.gallerySortOpen {

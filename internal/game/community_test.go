@@ -179,6 +179,20 @@ func TestLoadCommunityGalleryParsesNestedPackLevels(t *testing.T) {
 	}
 }
 
+func TestLoadCommunityGalleryClearsLoadingState(t *testing.T) {
+	raw, err := json.Marshal([]community.GalleryItem{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	game := Game{communityGalleryLoading: true}
+	if err := game.loadCommunityGallery(string(raw)); err != nil {
+		t.Fatal(err)
+	}
+	if game.communityGalleryLoading {
+		t.Fatal("gallery loading state stayed active after loading gallery payload")
+	}
+}
+
 func TestLoadCommunityPublishedDoesNotMutateGallery(t *testing.T) {
 	items := []community.GalleryItem{{
 		Kind:   "art",

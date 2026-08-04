@@ -438,7 +438,7 @@ func (g *Game) updateCommunityInput() {
 		case communityLevelsButton().Contains(x, y):
 			g.communityView = communityBrowse
 			g.communityPage = 0
-			requestCommunityGallery(g.galleryKind, g.gallerySort)
+			g.requestCommunityGallery(g.galleryKind, g.gallerySort)
 		case communityMyArtButton().Contains(x, y):
 			g.communityView = communityMyArt
 			g.communityPage = 0
@@ -520,19 +520,19 @@ func (g *Game) updateCommunityInput() {
 			g.galleryKind = "all"
 			g.gallerySortOpen = false
 			g.communityPage = 0
-			requestCommunityGallery(g.galleryKind, g.gallerySort)
+			g.requestCommunityGallery(g.galleryKind, g.gallerySort)
 			return
 		case communityGalleryArtButton().Contains(x, y):
 			g.galleryKind = "art"
 			g.gallerySortOpen = false
 			g.communityPage = 0
-			requestCommunityGallery(g.galleryKind, g.gallerySort)
+			g.requestCommunityGallery(g.galleryKind, g.gallerySort)
 			return
 		case communityGalleryPacksButton().Contains(x, y):
 			g.galleryKind = "pack"
 			g.gallerySortOpen = false
 			g.communityPage = 0
-			requestCommunityGallery(g.galleryKind, g.gallerySort)
+			g.requestCommunityGallery(g.galleryKind, g.gallerySort)
 			return
 		case communityGallerySortButton().Contains(x, y):
 			g.gallerySortOpen = !g.gallerySortOpen
@@ -541,22 +541,25 @@ func (g *Game) updateCommunityInput() {
 			g.gallerySort = "new"
 			g.gallerySortOpen = false
 			g.communityPage = 0
-			requestCommunityGallery(g.galleryKind, g.gallerySort)
+			g.requestCommunityGallery(g.galleryKind, g.gallerySort)
 			return
 		case g.gallerySortOpen && communityGalleryPlayedButton().Contains(x, y):
 			g.gallerySort = "played"
 			g.gallerySortOpen = false
 			g.communityPage = 0
-			requestCommunityGallery(g.galleryKind, g.gallerySort)
+			g.requestCommunityGallery(g.galleryKind, g.gallerySort)
 			return
 		case g.gallerySortOpen && communityGalleryTopButton().Contains(x, y):
 			g.gallerySort = "top"
 			g.gallerySortOpen = false
 			g.communityPage = 0
-			requestCommunityGallery(g.galleryKind, g.gallerySort)
+			g.requestCommunityGallery(g.galleryKind, g.gallerySort)
 			return
 		}
 		g.gallerySortOpen = false
+		if g.communityGalleryLoading {
+			return
+		}
 		start := g.communityPage * communityCatalogPerPage
 		for slot := 0; slot < communityCatalogPerPage; slot++ {
 			index := start + slot

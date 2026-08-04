@@ -653,11 +653,21 @@ func decodeCommunityGallery(raw string) ([]community.GalleryItem, error) {
 
 func (g *Game) loadCommunityGallery(raw string) error {
 	items, err := decodeCommunityGallery(raw)
+	g.communityGalleryLoading = false
 	if err != nil {
 		return err
 	}
 	g.communityGallery = items
 	return nil
+}
+
+func (g *Game) requestCommunityGallery(kind, sort string) {
+	g.communityGalleryLoading = true
+	g.communityGallery = nil
+	if !requestCommunityGallery(kind, sort) {
+		g.communityGalleryLoading = false
+		g.showCommunityNotice("gallery is available in the web build")
+	}
 }
 
 func (g *Game) loadCommunityChat(raw string) error {

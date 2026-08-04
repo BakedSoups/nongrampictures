@@ -615,11 +615,12 @@
 	    };
 	    let body = kind === "all" ? (await Promise.all([loadKind("art"), loadKind("pack")])).flat() : await loadKind(kind);
 	    body.sort((a,b) => sort === "top" ? ((b.likes || 0)-(a.likes || 0) || (b.plays || 0)-(a.plays || 0) || String(b.publishedAt).localeCompare(String(a.publishedAt))) : sort === "played" ? ((b.plays || 0)-(a.plays || 0) || String(b.publishedAt).localeCompare(String(a.publishedAt))) : String(b.publishedAt).localeCompare(String(a.publishedAt)));
-	    window.__pendingCommunityGallery = JSON.stringify(body);
-	  } catch (error) {
-	    setCommunityResult(error.message || "could not load gallery");
-	  }
-	};
+		    window.__pendingCommunityGallery = JSON.stringify(body);
+		  } catch (error) {
+		    window.__pendingCommunityGallery = "[]";
+		    setCommunityResult(error.message || "could not load gallery");
+		  }
+		};
 	window.recordCommunityPlay = async (levelId, completed) => {
 	  const { url, key } = communityConfig();
 	  if (!url || !key || !levelId) return;
