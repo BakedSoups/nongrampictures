@@ -343,7 +343,7 @@ func (g *Game) drawReveal(screen *ebiten.Image) {
 	}
 
 	drawButton(screen, g.layout.retryButton, "retry puzzle")
-	backLabel := "offline levels"
+	backLabel := "cool levels"
 	if g.editorPreview {
 		backLabel = "back to editor"
 	} else if g.communityPreview {
@@ -516,7 +516,7 @@ func drawEraserIcon(dst *ebiten.Image, r rect, active bool) {
 func (g *Game) drawMainMenu(screen *ebiten.Image) {
 	drawMenuBackdrop(screen)
 	drawScaledTextCentered(screen, "COMMUNITY NONGRAMS", rect{x: 76, y: 46, w: 388, h: 52}, 2.25, colInk)
-	drawButton(screen, mainLevelButton(), "Offline Levels")
+	drawButton(screen, mainLevelButton(), "Cool Levels")
 	drawGlobalCommunityButton(screen)
 	drawButton(screen, mainSettingsButton(), "Settings")
 	if time.Now().Before(g.menuNoticeUntil) {
@@ -597,7 +597,9 @@ func mainSettingsButton() rect {
 
 func (g *Game) drawLevelSelect(screen *ebiten.Image) {
 	drawMenuBackdrop(screen)
-	drawScaledTextCentered(screen, "OFFLINE LEVELS", rect{x: 56, y: 48, w: 428, h: 58}, 2.1, colInk)
+	drawScaledTextCentered(screen, "COOL LEVELS", rect{x: 56, y: 42, w: 428, h: 54}, 2.1, colInk)
+	drawCenteredText(screen, "These are just some offline nongrams I made.", rect{x: 56, y: 108, w: 428, h: 20}, colMuted)
+	drawCenteredText(screen, "I wanted the focus to be the multiplayer though.", rect{x: 56, y: 132, w: 428, h: 20}, colMuted)
 	pageStart := g.levelPage * levelSelectPageSize
 	for slot := 0; slot < levelSelectPageSize; slot++ {
 		g.drawLevelTile(screen, levelTileRect(slot), pageStart+slot)
