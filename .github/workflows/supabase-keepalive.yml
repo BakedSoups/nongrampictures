@@ -1,0 +1,45 @@
+name: supabase keepalive
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Supabase free-tier projects pause after 7 idle days; ping twice weekly.
+    - cron: "17 10 * * 1,4"
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check Supabase secrets
+        run: |
+          test -n "$SUPABASE_URL"
+          test -n "$SUPABASE_ANON_KEY"
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+
+      - name: Ping Supabase Data API
+        run: |
+          set -euo pipefail
+          base_url="${SUPABASE_URL%/}"
+          if [ "${base_url%/rest/v1}" != "$base_url" ]; then
+            base_url="${base_url%/rest/v1}"
+          fi
+
+          status="$(
+            curl --silent --show-error --output /tmp/supabase-keepalive.json \
+              --write-out "%{http_code}" \
+              --header "apikey: ${SUPABASE_ANON_KEY}" \
+              --header "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
+              "${base_url}/rest/v1/profiles?select=id&limit=1"
+          )"
+
+          if [ "$status" -lt 200 ] || [ "$status" -ge 300 ]; then
+            echo "Supabase keepalive failed with HTTP ${status}" >&2
+            cat /tmp/supabase-keepalive.json >&2
+            exit 1
+          fi
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}

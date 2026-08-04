@@ -153,6 +153,19 @@ If those values are omitted, the game still deploys and offline levels still wor
 
 After deployment, add the Vercel production URL and any preview URLs you use to Supabase Auth redirect URLs.
 
+## Supabase Keepalive
+
+Free-tier Supabase projects can pause after 7 days of inactivity. This repo includes `.github/workflows/supabase-keepalive.yml`, which runs twice a week and makes a small read request to the Supabase Data API.
+
+Add these GitHub Actions repository secrets:
+
+```sh
+SUPABASE_URL=https://YOUR_PROJECT.supabase.co
+SUPABASE_ANON_KEY=YOUR_PUBLIC_ANON_KEY
+```
+
+You can also run the workflow manually from the GitHub Actions tab after unpausing a project.
+
 ## Checks
 
 Local checks:
