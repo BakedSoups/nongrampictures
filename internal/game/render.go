@@ -675,8 +675,8 @@ func (g *Game) drawTipsControls(screen *ebiten.Image, panel rect) {
 
 func (g *Game) drawTipsCommunity(screen *ebiten.Image, panel rect) {
 	drawCenteredText(screen, "COMMUNITY FIRST", rect{x: panel.x, y: panel.y + 24, w: panel.w, h: 24}, colInk)
-	drawText(screen, "Cool Levels are local puzzles I made.", 96, 300, colInk)
-	drawText(screen, "They work offline and are always here.", 96, 330, colInk)
+	drawText(screen, "Cool Levels are built-in puzzles I made.", 96, 300, colInk)
+	drawText(screen, "They are here when you want solo play.", 96, 330, colInk)
 	drawText(screen, "The main focus is multiplayer:", 96, 388, colAccent)
 	drawText(screen, "publish art, open packs, leave chats,", 96, 424, colInk)
 	drawText(screen, "like good puzzles, and play community", 96, 452, colInk)
@@ -706,7 +706,7 @@ func drawTipsDemoSquare(screen *ebiten.Image, r rect, state nonogram.CellState) 
 func (g *Game) drawLevelSelect(screen *ebiten.Image) {
 	drawMenuBackdrop(screen)
 	drawScaledTextCentered(screen, "COOL LEVELS", rect{x: 56, y: 42, w: 428, h: 54}, 2.1, colInk)
-	drawCenteredText(screen, "These are just some offline nongrams I made.", rect{x: 56, y: 202, w: 428, h: 20}, colMuted)
+	drawCenteredText(screen, "These are just some built-in nongrams I made.", rect{x: 56, y: 202, w: 428, h: 20}, colMuted)
 	drawCenteredText(screen, "I wanted the focus to be the multiplayer though.", rect{x: 56, y: 226, w: 428, h: 20}, colMuted)
 	pageStart := g.levelPage * levelSelectPageSize
 	for slot := 0; slot < levelSelectPageSize; slot++ {
