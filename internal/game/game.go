@@ -17,6 +17,7 @@ const (
 	ScreenHeight = 780
 
 	levelSelectPageSize = 16
+	tipsPageCount       = 3
 )
 
 type Game struct {
@@ -63,6 +64,8 @@ type Game struct {
 	menuNotice      string
 	menuNoticeUntil time.Time
 	levelPage       int
+	tipsPage        int
+	tipsDemoCell    nonogram.CellState
 
 	editor               editorState
 	editorUndo           []editorState

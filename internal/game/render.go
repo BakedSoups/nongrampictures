@@ -397,7 +397,7 @@ func levelTileRect(index int) rect {
 	size := 84.0
 	gap := 14.0
 	startX := 78.0
-	startY := 206.0
+	startY := 250.0
 	col := float64(index % cols)
 	row := float64(index / cols)
 	return rect{x: startX + col*(size+gap), y: startY + row*(size+gap), w: size, h: size}
@@ -608,6 +608,18 @@ func tipsBackButton() rect {
 	return rect{x: 202, y: 674, w: 136, h: 42}
 }
 
+func tipsPrevButton() rect {
+	return rect{x: 82, y: 618, w: 120, h: 40}
+}
+
+func tipsNextButton() rect {
+	return rect{x: 338, y: 618, w: 120, h: 40}
+}
+
+func tipsDemoSquare() rect {
+	return rect{x: 220, y: 356, w: 100, h: 100}
+}
+
 func (g *Game) drawTips(screen *ebiten.Image) {
 	drawMenuBackdrop(screen)
 	drawScaledTextCentered(screen, "HOW TO PLAY", rect{x: 76, y: 46, w: 388, h: 52}, 2.25, colInk)
@@ -615,32 +627,87 @@ func (g *Game) drawTips(screen *ebiten.Image) {
 	drawRounded(screen, rect{x: panel.x + 8, y: panel.y + 9, w: panel.w, h: panel.h}, 6, color.RGBA{126, 118, 105, 130})
 	drawRounded(screen, panel, 4, colGridHeavy)
 	drawRounded(screen, inset(panel, 5), 3, colPanelDark)
-	drawCenteredText(screen, "TIPS", rect{x: panel.x, y: panel.y + 24, w: panel.w, h: 24}, colInk)
 
-	lines := []string{
-		"Numbers tell you how many filled cells are in each row or column.",
-		"Groups are separated by at least one empty cell.",
-		"Fill cells you think belong in the picture.",
-		"Mark cells with an X when you know they stay blank.",
-		"The assist can catch mistakes, but each correction adds time.",
-		"Cool Levels are local puzzles; multiplayer and community art are the main game.",
+	switch g.tipsPage {
+	case 0:
+		g.drawTipsClues(screen, panel)
+	case 1:
+		g.drawTipsControls(screen, panel)
+	default:
+		g.drawTipsCommunity(screen, panel)
 	}
-	y := 286.0
-	for _, line := range lines {
-		for _, wrapped := range wrapTextLines(line, 42, 2) {
-			drawText(screen, wrapped, 104, int(y), colInk)
-			y += 22
-		}
-		y += 10
+
+	drawCenteredText(screen, fmt.Sprintf("%d/%d", g.tipsPage+1, tipsPageCount), rect{x: 0, y: 628, w: ScreenWidth, h: 22}, colMuted)
+	if g.tipsPage > 0 {
+		drawButton(screen, tipsPrevButton(), "prev")
+	}
+	if g.tipsPage < tipsPageCount-1 {
+		drawButton(screen, tipsNextButton(), "next")
 	}
 	drawButton(screen, tipsBackButton(), "back")
+}
+
+func (g *Game) drawTipsClues(screen *ebiten.Image, panel rect) {
+	drawCenteredText(screen, "PICTURES FROM NUMBERS", rect{x: panel.x, y: panel.y + 24, w: panel.w, h: 24}, colInk)
+	portrait := rect{x: 104, y: 296, w: 132, h: 132}
+	drawRounded(screen, rect{x: portrait.x - 6, y: portrait.y - 6, w: portrait.w + 12, h: portrait.h + 12}, 4, colGridHeavy)
+	drawRounded(screen, portrait, 3, colWhite)
+	if lion := g.levelThumbs["l4"]; len(lion) > 0 {
+		drawPixelMatrix(screen, lion, portrait, 1)
+	}
+	drawText(screen, "Every puzzle hides pixel art.", 260, 312, colInk)
+	drawText(screen, "The edge numbers are clues.", 260, 342, colInk)
+	drawText(screen, "Example:", 260, 392, colMuted)
+	drawText(screen, "3 means three filled cells.", 260, 420, colAccent)
+	drawText(screen, "1 2 means one filled cell,", 104, 482, colInk)
+	drawText(screen, "then a gap, then two more.", 104, 510, colInk)
+}
+
+func (g *Game) drawTipsControls(screen *ebiten.Image, panel rect) {
+	drawCenteredText(screen, "CLICKS", rect{x: panel.x, y: panel.y + 24, w: panel.w, h: 24}, colInk)
+	drawText(screen, "Left click fills a square.", 118, 292, colInk)
+	drawText(screen, "Right click marks an X.", 118, 322, colInk)
+	drawTipsDemoSquare(screen, tipsDemoSquare(), g.tipsDemoCell)
+	drawCenteredText(screen, "try this square", rect{x: 154, y: 472, w: 232, h: 24}, colMuted)
+	drawText(screen, "The fill and X buttons do the same jobs", 96, 518, colInk)
+	drawText(screen, "when you want touch or toolbar controls.", 96, 546, colInk)
+}
+
+func (g *Game) drawTipsCommunity(screen *ebiten.Image, panel rect) {
+	drawCenteredText(screen, "COMMUNITY FIRST", rect{x: panel.x, y: panel.y + 24, w: panel.w, h: 24}, colInk)
+	drawText(screen, "Cool Levels are local puzzles I made.", 96, 300, colInk)
+	drawText(screen, "They work offline and are always here.", 96, 330, colInk)
+	drawText(screen, "The main focus is multiplayer:", 96, 388, colAccent)
+	drawText(screen, "publish art, open packs, leave chats,", 96, 424, colInk)
+	drawText(screen, "like good puzzles, and play community", 96, 452, colInk)
+	drawText(screen, "nongrams from other creators.", 96, 480, colInk)
+}
+
+func drawTipsDemoSquare(screen *ebiten.Image, r rect, state nonogram.CellState) {
+	registerButtonRect(r)
+	drawRounded(screen, rect{x: r.x + 5, y: r.y + 6, w: r.w, h: r.h}, 6, color.RGBA{126, 118, 105, 130})
+	drawRounded(screen, r, 4, colGridHeavy)
+	drawRounded(screen, inset(r, 6), 2, colWhite)
+	cell := inset(r, 15)
+	drawRectOutline(screen, cell, 2, colGrid)
+	switch state {
+	case nonogram.CellFilled:
+		drawRounded(screen, inset(cell, 6), 2, colInk)
+	case nonogram.CellMarked:
+		x1 := float32(cell.x + 16)
+		y1 := float32(cell.y + 16)
+		x2 := float32(cell.x + cell.w - 16)
+		y2 := float32(cell.y + cell.h - 16)
+		vector.StrokeLine(screen, x1, y1, x2, y2, 5, colAccent, false)
+		vector.StrokeLine(screen, x2, y1, x1, y2, 5, colAccent, false)
+	}
 }
 
 func (g *Game) drawLevelSelect(screen *ebiten.Image) {
 	drawMenuBackdrop(screen)
 	drawScaledTextCentered(screen, "COOL LEVELS", rect{x: 56, y: 42, w: 428, h: 54}, 2.1, colInk)
-	drawCenteredText(screen, "These are just some offline nongrams I made.", rect{x: 56, y: 108, w: 428, h: 20}, colMuted)
-	drawCenteredText(screen, "I wanted the focus to be the multiplayer though.", rect{x: 56, y: 132, w: 428, h: 20}, colMuted)
+	drawCenteredText(screen, "These are just some offline nongrams I made.", rect{x: 56, y: 202, w: 428, h: 20}, colMuted)
+	drawCenteredText(screen, "I wanted the focus to be the multiplayer though.", rect{x: 56, y: 226, w: 428, h: 20}, colMuted)
 	pageStart := g.levelPage * levelSelectPageSize
 	for slot := 0; slot < levelSelectPageSize; slot++ {
 		g.drawLevelTile(screen, levelTileRect(slot), pageStart+slot)

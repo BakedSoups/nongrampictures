@@ -267,6 +267,7 @@ func (g *Game) updateMainMenuInput() {
 		g.communityView = communityHome
 		g.mode = screenCommunity
 	case mainTipsButton().Contains(x, y):
+		g.tipsPage = 0
 		g.mode = screenTips
 	case mainSettingsButton().Contains(x, y):
 		g.mode = screenSettings
@@ -279,8 +280,37 @@ func (g *Game) updateTipsInput() {
 		return
 	}
 	x, y, _, justPressed, _ := pointerState()
+	if justPressed && tipsPrevButton().Contains(x, y) {
+		if g.tipsPage > 0 {
+			g.tipsPage--
+		}
+		return
+	}
+	if justPressed && tipsNextButton().Contains(x, y) {
+		if g.tipsPage < tipsPageCount-1 {
+			g.tipsPage++
+		}
+		return
+	}
 	if justPressed && tipsBackButton().Contains(x, y) {
 		g.mode = screenMainMenu
+		return
+	}
+	if tipsDemoSquare().Contains(x, y) {
+		if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
+			if g.tipsDemoCell == nonogram.CellFilled {
+				g.tipsDemoCell = nonogram.CellEmpty
+			} else {
+				g.tipsDemoCell = nonogram.CellFilled
+			}
+		}
+		if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonRight) {
+			if g.tipsDemoCell == nonogram.CellMarked {
+				g.tipsDemoCell = nonogram.CellEmpty
+			} else {
+				g.tipsDemoCell = nonogram.CellMarked
+			}
+		}
 	}
 }
 
