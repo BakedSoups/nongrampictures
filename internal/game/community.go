@@ -119,15 +119,6 @@ func (g *Game) closeProfileEditor(save bool) {
 	g.mode = screenCommunity
 }
 
-func (g *Game) syncCommunityProfileArt() {
-	if !communitySignedIn() {
-		return
-	}
-	if raw, err := json.Marshal(g.profileArt.puzzle()); err == nil {
-		syncCommunityProfile(string(raw), g.profileBio, g.profileName, g.profileSocial, g.profilePalette, g.profileColor)
-	}
-}
-
 func (g *Game) saveCommunityProfileDetails() {
 	saveCommunityBio(g.profileBio)
 	saveCommunitySocial(g.profileSocial)

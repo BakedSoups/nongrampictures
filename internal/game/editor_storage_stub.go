@@ -76,6 +76,8 @@ func takeCommunityCreators() string { return "" }
 
 func syncCommunityProfile(string, string, string, string, string, string) {}
 
+func syncCommunityProfileDetails(string, string, string, string, string) {}
+
 func requestCommunityGallery(string, string) bool { return false }
 
 func takeCommunityGallery() string { return "" }

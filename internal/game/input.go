@@ -449,7 +449,6 @@ func (g *Game) updateCommunityInput() {
 			g.selectedCreator = -1
 			g.creatorSearchActive = false
 			g.communityPage = 0
-			g.syncCommunityProfileArt()
 			requestCommunityCreators()
 		}
 	case communityCreate:
@@ -869,9 +868,7 @@ func (g *Game) updateCommunityInput() {
 				g.profileBio = truncateText(strings.TrimSpace(g.profileBioDraft), 50)
 				g.profileSocial = social
 				g.saveCommunityProfileDetails()
-				if raw, err := json.Marshal(g.profileArt.puzzle()); err == nil {
-					syncCommunityProfile(string(raw), g.profileBio, g.profileName, g.profileSocial, g.profilePalette, g.profileColor)
-				}
+				syncCommunityProfileDetails(g.profileBio, g.profileName, g.profileSocial, g.profilePalette, g.profileColor)
 				g.profileBioEditing = false
 				g.profileNameEditing = false
 				g.profileSocialEditing = false

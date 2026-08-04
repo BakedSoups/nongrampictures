@@ -222,6 +222,10 @@ func syncCommunityProfile(raw, bio, name, social, palette, favoriteColor string)
 	callJS("syncCommunityProfile", raw, bio, name, social, palette, favoriteColor)
 }
 
+func syncCommunityProfileDetails(bio, name, social, palette, favoriteColor string) {
+	callJS("syncCommunityProfileDetails", bio, name, social, palette, favoriteColor)
+}
+
 func deleteCommunityCloudDraft(id string) {
 	callJS("deleteCommunityCloudDraft", id)
 }

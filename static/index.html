@@ -507,6 +507,31 @@
 	    // The local badge remains available while offline.
 	  }
 	};
+	window.syncCommunityProfileDetails = async (bio, displayName, social, palette, favoriteColor) => {
+	  const { url, key } = communityConfig();
+	  const session = await validCommunitySession().catch(() => null);
+	  if (!url || !key || !session?.access_token) return;
+	  try {
+	    const payload = JSON.parse(atob(session.access_token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/")));
+	    const userID = payload.sub;
+	    if (!userID) return;
+	    const response = await fetch(`${url}/rest/v1/profiles?id=eq.${encodeURIComponent(userID)}`, {
+	      method: "PATCH",
+	      headers: { ...communityHeaders(session.access_token), Prefer: "return=minimal" },
+	      body: JSON.stringify({
+	        bio: String(bio || "").slice(0, 50),
+	        display_name: String(displayName || "Creator").slice(0, 40),
+	        social: String(social || "").slice(0, 160),
+	        favorite_palette: String(palette || "").slice(0, 40),
+	        favorite_color: String(favoriteColor || "").slice(0, 9)
+	      })
+	    });
+	    if (!response.ok) throw new Error("Profile details sync failed");
+	    window.requestCommunityCreators?.();
+	  } catch (_) {
+	    // Details remain available locally while offline.
+	  }
+	};
 	window.takeCommunityGallery = () => {
 	  const value = window.__pendingCommunityGallery || "";
 	  window.__pendingCommunityGallery = "";
