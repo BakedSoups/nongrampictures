@@ -35,6 +35,10 @@ func (g *Game) updateInput() {
 		g.updateSettingsInput()
 		return
 	}
+	if g.mode == screenTips {
+		g.updateTipsInput()
+		return
+	}
 	if g.mode == screenEditor {
 		g.updateEditorInput()
 		return
@@ -262,8 +266,21 @@ func (g *Game) updateMainMenuInput() {
 	case mainCommunityButton().Contains(x, y):
 		g.communityView = communityHome
 		g.mode = screenCommunity
+	case mainTipsButton().Contains(x, y):
+		g.mode = screenTips
 	case mainSettingsButton().Contains(x, y):
 		g.mode = screenSettings
+	}
+}
+
+func (g *Game) updateTipsInput() {
+	if inpututil.IsKeyJustPressed(ebiten.KeyEscape) || inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
+		g.mode = screenMainMenu
+		return
+	}
+	x, y, _, justPressed, _ := pointerState()
+	if justPressed && tipsBackButton().Contains(x, y) {
+		g.mode = screenMainMenu
 	}
 }
 

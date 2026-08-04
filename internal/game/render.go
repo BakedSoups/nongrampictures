@@ -133,6 +133,10 @@ func (g *Game) draw(screen *ebiten.Image) {
 		g.drawSettings(screen)
 		return
 	}
+	if g.mode == screenTips {
+		g.drawTips(screen)
+		return
+	}
 	if g.mode == screenEditor {
 		g.drawEditor(screen)
 		return
@@ -518,6 +522,7 @@ func (g *Game) drawMainMenu(screen *ebiten.Image) {
 	drawScaledTextCentered(screen, "COMMUNITY NONGRAMS", rect{x: 76, y: 46, w: 388, h: 52}, 2.25, colInk)
 	drawButton(screen, mainLevelButton(), "Cool Levels")
 	drawGlobalCommunityButton(screen)
+	drawButton(screen, mainTipsButton(), "Tips")
 	drawButton(screen, mainSettingsButton(), "Settings")
 	if time.Now().Before(g.menuNoticeUntil) {
 		drawNoticePopup(screen, g.menuNotice, 542)
@@ -591,8 +596,44 @@ func mainCommunityButton() rect {
 	return rect{x: 128, y: 354, w: 284, h: 46}
 }
 
-func mainSettingsButton() rect {
+func mainTipsButton() rect {
 	return rect{x: 128, y: 424, w: 284, h: 46}
+}
+
+func mainSettingsButton() rect {
+	return rect{x: 128, y: 494, w: 284, h: 46}
+}
+
+func tipsBackButton() rect {
+	return rect{x: 202, y: 674, w: 136, h: 42}
+}
+
+func (g *Game) drawTips(screen *ebiten.Image) {
+	drawMenuBackdrop(screen)
+	drawScaledTextCentered(screen, "HOW TO PLAY", rect{x: 76, y: 46, w: 388, h: 52}, 2.25, colInk)
+	panel := rect{x: 70, y: 222, w: 400, h: 356}
+	drawRounded(screen, rect{x: panel.x + 8, y: panel.y + 9, w: panel.w, h: panel.h}, 6, color.RGBA{126, 118, 105, 130})
+	drawRounded(screen, panel, 4, colGridHeavy)
+	drawRounded(screen, inset(panel, 5), 3, colPanelDark)
+	drawCenteredText(screen, "TIPS", rect{x: panel.x, y: panel.y + 24, w: panel.w, h: 24}, colInk)
+
+	lines := []string{
+		"Numbers tell you how many filled cells are in each row or column.",
+		"Groups are separated by at least one empty cell.",
+		"Fill cells you think belong in the picture.",
+		"Mark cells with an X when you know they stay blank.",
+		"The assist can catch mistakes, but each correction adds time.",
+		"Cool Levels are local puzzles; multiplayer and community art are the main game.",
+	}
+	y := 286.0
+	for _, line := range lines {
+		for _, wrapped := range wrapTextLines(line, 42, 2) {
+			drawText(screen, wrapped, 104, int(y), colInk)
+			y += 22
+		}
+		y += 10
+	}
+	drawButton(screen, tipsBackButton(), "back")
 }
 
 func (g *Game) drawLevelSelect(screen *ebiten.Image) {
