@@ -43,6 +43,7 @@ type Game struct {
 	completedIn time.Duration
 	bestTimes   map[string]time.Duration
 	levelThumbs map[string][][]assets.PixelCell
+	levelPuzzle map[string]*nonogram.Puzzle
 
 	audioEnabled      bool
 	communityMusicOn  bool
@@ -206,6 +207,7 @@ func New(puzzlePath string) (*Game, error) {
 		mode:               screenMainMenu,
 		bestTimes:          loadBestTimes(),
 		levelThumbs:        loadLevelThumbs(),
+		levelPuzzle:        loadLevelPuzzles(),
 		editor:             initialEditor(),
 		profileArt:         initialProfileArt(),
 		profileBio:         loadCommunityBio(),
@@ -273,6 +275,20 @@ func loadLevelThumbs() map[string][][]assets.PixelCell {
 		}
 	}
 	return thumbs
+}
+
+func loadLevelPuzzles() map[string]*nonogram.Puzzle {
+	puzzles := make(map[string]*nonogram.Puzzle, len(gameLevels))
+	for _, level := range gameLevels {
+		if !level.Available {
+			continue
+		}
+		loaded, err := assets.LoadPuzzleAssets(level.Path)
+		if err == nil {
+			puzzles[level.ID] = loaded.Puzzle
+		}
+	}
+	return puzzles
 }
 
 func (g *Game) Update() error {
