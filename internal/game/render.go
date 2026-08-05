@@ -630,9 +630,11 @@ func (g *Game) drawTips(screen *ebiten.Image) {
 
 	switch g.tipsPage {
 	case 0:
-		g.drawTipsClues(screen, panel)
-	case 1:
 		g.drawTipsControls(screen, panel)
+	case 1:
+		g.drawTipsSolveDemo(screen, panel)
+	case 2:
+		g.drawTipsComplete(screen, panel)
 	default:
 		g.drawTipsCommunity(screen, panel)
 	}
@@ -647,30 +649,157 @@ func (g *Game) drawTips(screen *ebiten.Image) {
 	drawButton(screen, tipsBackButton(), "back")
 }
 
-func (g *Game) drawTipsClues(screen *ebiten.Image, panel rect) {
-	drawCenteredText(screen, "PICTURES FROM NUMBERS", rect{x: panel.x, y: panel.y + 24, w: panel.w, h: 24}, colInk)
-	portrait := rect{x: 104, y: 296, w: 132, h: 132}
+func (g *Game) drawTipsSolveDemo(screen *ebiten.Image, panel rect) {
+	drawCenteredText(screen, "WATCH THE CLUES", rect{x: panel.x, y: panel.y + 24, w: panel.w, h: 24}, colInk)
+	drawText(screen, "Numbers say which cells get filled.", 104, 282, colInk)
+	drawText(screen, "The highlighted row and column are being solved.", 104, 308, colMuted)
+	progress := math.Mod(float64(time.Now().UnixMilli()), 6500) / 6500
+	g.drawTipsLionBoard(screen, rect{x: 176, y: 366, w: 188, h: 188}, progress, false)
+	drawCenteredText(screen, "left to right, clue by clue", rect{x: 116, y: 560, w: 308, h: 24}, colAccent)
+}
+
+func (g *Game) drawTipsComplete(screen *ebiten.Image, panel rect) {
+	drawCenteredText(screen, "COMPLETE", rect{x: panel.x, y: panel.y + 24, w: panel.w, h: 24}, colAccent)
+	g.drawTipsLionBoard(screen, rect{x: 104, y: 318, w: 160, h: 160}, 1, true)
+	portrait := rect{x: 318, y: 318, w: 112, h: 112}
 	drawRounded(screen, rect{x: portrait.x - 6, y: portrait.y - 6, w: portrait.w + 12, h: portrait.h + 12}, 4, colGridHeavy)
 	drawRounded(screen, portrait, 3, colWhite)
 	if lion := g.levelThumbs["l4"]; len(lion) > 0 {
 		drawPixelMatrix(screen, lion, portrait, 1)
 	}
-	drawText(screen, "Every puzzle hides pixel art.", 260, 312, colInk)
-	drawText(screen, "The edge numbers are clues.", 260, 342, colInk)
-	drawText(screen, "Example:", 260, 392, colMuted)
-	drawText(screen, "3 means three filled cells.", 260, 420, colAccent)
-	drawText(screen, "1 2 means one filled cell,", 104, 482, colInk)
-	drawText(screen, "then a gap, then two more.", 104, 510, colInk)
+	drawText(screen, "When the board matches the clues,", 104, 502, colInk)
+	drawText(screen, "the hidden picture is revealed.", 104, 530, colInk)
+	drawText(screen, "This one becomes the lion.", 104, 558, colAccent)
+}
+
+func (g *Game) drawTipsLionBoard(screen *ebiten.Image, board rect, progress float64, complete bool) {
+	matrix := g.levelThumbs["l4"]
+	if len(matrix) == 0 || len(matrix[0]) == 0 {
+		drawTipsFallbackBoard(screen, board)
+		return
+	}
+	rows := len(matrix)
+	cols := len(matrix[0])
+	solution := make([][]bool, rows)
+	totalFilled := 0
+	for y := range matrix {
+		solution[y] = make([]bool, cols)
+		for x := range matrix[y] {
+			if matrix[y][x].Visible {
+				solution[y][x] = true
+				totalFilled++
+			}
+		}
+	}
+	if totalFilled == 0 {
+		drawTipsFallbackBoard(screen, board)
+		return
+	}
+
+	cellSize := math.Floor(math.Min(board.w/float64(cols), board.h/float64(rows)))
+	board.w = cellSize * float64(cols)
+	board.h = cellSize * float64(rows)
+	rowClues := nonogram.RowClues(solution)
+	colClues := nonogram.ColumnClues(solution)
+	fillTarget := int(math.Round(clamp(progress, 0, 1) * float64(totalFilled)))
+	if complete {
+		fillTarget = totalFilled
+	}
+	activeRow, activeCol := tipsActiveLionCell(solution, fillTarget)
+
+	clueLeft := board.x - 64
+	clueTop := board.y - 62
+	drawRounded(screen, rect{x: clueLeft - 4, y: clueTop - 4, w: board.w + 72, h: board.h + 72}, 4, colWhite)
+	for y := 0; y < rows; y++ {
+		c := color.RGBA{238, 235, 226, 255}
+		if y == activeRow && !complete {
+			c = color.RGBA{251, 213, 107, 255}
+		}
+		vector.DrawFilledRect(screen, float32(clueLeft), float32(board.y+float64(y)*cellSize), 58, float32(cellSize), c, false)
+	}
+	for x := 0; x < cols; x++ {
+		c := color.RGBA{238, 235, 226, 255}
+		if x == activeCol && !complete {
+			c = color.RGBA{251, 213, 107, 255}
+		}
+		vector.DrawFilledRect(screen, float32(board.x+float64(x)*cellSize), float32(clueTop), float32(cellSize), 58, c, false)
+	}
+
+	filledSeen := 0
+	for y := 0; y < rows; y++ {
+		for x := 0; x < cols; x++ {
+			cell := rect{x: board.x + float64(x)*cellSize, y: board.y + float64(y)*cellSize, w: cellSize, h: cellSize}
+			cellColor := colWhite
+			if solution[y][x] {
+				filledSeen++
+				if filledSeen <= fillTarget {
+					cellColor = matrix[y][x].Color
+				}
+			}
+			vector.DrawFilledRect(screen, float32(cell.x), float32(cell.y), float32(cell.w), float32(cell.h), cellColor, false)
+			drawRectOutline(screen, cell, 1, colGrid)
+		}
+	}
+	drawRectOutline(screen, board, 3, colGridHeavy)
+
+	for y, clues := range rowClues {
+		label := clueLabel(clues)
+		tx := int(board.x-8) - text.BoundString(face, label).Dx()
+		ty := int(board.y + float64(y)*cellSize + cellSize/2 + 5)
+		drawText(screen, label, tx, ty, colInk)
+	}
+	for x, clues := range colClues {
+		parts := make([]string, len(clues))
+		for i, n := range clues {
+			parts[i] = fmt.Sprint(n)
+		}
+		cx := int(board.x + float64(x)*cellSize + cellSize/2)
+		step := columnClueStep(len(parts))
+		bottomY := int(board.y - 9)
+		startY := bottomY - (len(parts)-1)*step
+		for i, part := range parts {
+			drawText(screen, part, cx-text.BoundString(face, part).Dx()/2, startY+i*step, colInk)
+		}
+	}
+}
+
+func tipsActiveLionCell(solution [][]bool, fillTarget int) (int, int) {
+	seen := 0
+	for y := range solution {
+		for x := range solution[y] {
+			if !solution[y][x] {
+				continue
+			}
+			seen++
+			if seen >= fillTarget+1 {
+				return y, x
+			}
+		}
+	}
+	return -1, -1
+}
+
+func drawTipsFallbackBoard(screen *ebiten.Image, board rect) {
+	drawRounded(screen, board, 4, colWhite)
+	for i := 0; i <= 5; i++ {
+		x := float32(board.x + float64(i)*board.w/5)
+		y := float32(board.y + float64(i)*board.h/5)
+		vector.StrokeLine(screen, x, float32(board.y), x, float32(board.y+board.h), 1, colGrid, false)
+		vector.StrokeLine(screen, float32(board.x), y, float32(board.x+board.w), y, 1, colGrid, false)
+	}
+	drawRectOutline(screen, board, 3, colGridHeavy)
 }
 
 func (g *Game) drawTipsControls(screen *ebiten.Image, panel rect) {
-	drawCenteredText(screen, "CLICKS", rect{x: panel.x, y: panel.y + 24, w: panel.w, h: 24}, colInk)
-	drawText(screen, "Left click fills a square.", 118, 292, colInk)
-	drawText(screen, "Right click marks an X.", 118, 322, colInk)
+	drawCenteredText(screen, "FILL SQUARES", rect{x: panel.x, y: panel.y + 24, w: panel.w, h: 24}, colInk)
+	drawText(screen, "In this game you fill squares to", 104, 282, colInk)
+	drawText(screen, "reveal the hidden picture.", 104, 308, colInk)
+	drawText(screen, "Left click fills a square.", 104, 348, colAccent)
+	drawText(screen, "Right click marks an X.", 104, 376, colAccent)
 	drawTipsDemoSquare(screen, tipsDemoSquare(), g.tipsDemoCell)
 	drawCenteredText(screen, "try this square", rect{x: 154, y: 472, w: 232, h: 24}, colMuted)
-	drawText(screen, "The fill and X buttons do the same jobs", 96, 518, colInk)
-	drawText(screen, "when you want touch or toolbar controls.", 96, 546, colInk)
+	drawText(screen, "Settings has assist: it can auto-correct", 88, 520, colInk)
+	drawText(screen, "mistakes whenever you want for +10s.", 88, 548, colInk)
 }
 
 func (g *Game) drawTipsCommunity(screen *ebiten.Image, panel rect) {

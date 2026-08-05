@@ -17,7 +17,7 @@ const (
 	ScreenHeight = 780
 
 	levelSelectPageSize = 16
-	tipsPageCount       = 3
+	tipsPageCount       = 4
 )
 
 type Game struct {
