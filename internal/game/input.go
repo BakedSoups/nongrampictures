@@ -66,35 +66,7 @@ func (g *Game) updateInput() {
 		g.godModeFill()
 		return
 	}
-	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonRight) {
-		x, y := ebiten.CursorPosition()
-		cellX, cellY, ok := g.layout.CellAt(x, y, g.board.Width, g.board.Height)
-		if ok {
-			g.pushUndo()
-			next := nonogram.CellMarked
-			if g.board.Cells[cellY][cellX] == nonogram.CellMarked {
-				next = nonogram.CellEmpty
-			}
-			next, corrected := g.correctedStrokeState(cellX, cellY, next)
-			if g.board.SetCell(cellX, cellY, next) {
-				if corrected {
-					g.timePenalty += 10 * time.Second
-					g.penaltyFlashUntil = time.Now().Add(900 * time.Millisecond)
-					g.correctFlashUntil = time.Now().Add(850 * time.Millisecond)
-					g.correctFlashX, g.correctFlashY = cellX, cellY
-					playWebSFX("correct")
-				} else {
-					playWebSFX("eraser")
-				}
-				if nonogram.IsSolved(g.board, g.puzzle.Solution) {
-					g.completePuzzle()
-				}
-			}
-		}
-		return
-	}
-
-	x, y, down, justPressed, justReleased := pointerState()
+	x, y, down, justPressed, justReleased, rightDown, rightJustPressed, rightJustReleased := puzzlePointerState()
 	if justReleased {
 		g.pointerDown = false
 		g.dragging = false
@@ -102,7 +74,14 @@ func (g *Game) updateInput() {
 		g.lastCellY = -1
 		g.strokeState = nonogram.CellEmpty
 	}
-	if !down {
+	if rightJustReleased {
+		g.pointerDown = false
+		g.dragging = false
+		g.lastCellX = -1
+		g.lastCellY = -1
+		g.strokeState = nonogram.CellEmpty
+	}
+	if !down && !rightDown {
 		return
 	}
 
@@ -130,10 +109,14 @@ func (g *Game) updateInput() {
 	if !ok {
 		return
 	}
-	if justPressed {
+	if justPressed || rightJustPressed {
 		g.pushUndo()
 		g.pointerDown = true
-		g.strokeState = nonogram.TargetState(g.tool)
+		if rightJustPressed {
+			g.strokeState = nonogram.CellMarked
+		} else {
+			g.strokeState = nonogram.TargetState(g.tool)
+		}
 		if g.board.Cells[cellY][cellX] == g.strokeState {
 			g.strokeState = nonogram.CellEmpty
 		}
@@ -1520,6 +1503,17 @@ func pointerState() (int, int, bool, bool, bool) {
 		justReleased = false
 	}
 	return x, y, down, justPressed, justReleased
+}
+
+func puzzlePointerState() (int, int, bool, bool, bool, bool, bool, bool) {
+	x, y, down, justPressed, justReleased := pointerState()
+	rightDown := ebiten.IsMouseButtonPressed(ebiten.MouseButtonRight)
+	rightJustPressed := inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonRight)
+	rightJustReleased := inpututil.IsMouseButtonJustReleased(ebiten.MouseButtonRight)
+	if rightDown || rightJustPressed || rightJustReleased {
+		x, y = ebiten.CursorPosition()
+	}
+	return x, y, down, justPressed, justReleased, rightDown, rightJustPressed, rightJustReleased
 }
 
 type rect struct {

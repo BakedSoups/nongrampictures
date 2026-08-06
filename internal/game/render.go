@@ -218,29 +218,55 @@ func (g *Game) drawClues(screen *ebiten.Image) {
 }
 
 func (g *Game) rowSatisfied(y int) bool {
-	if g.board == nil || g.puzzle == nil || y < 0 || y >= g.board.Height || y >= len(g.puzzle.Solution) {
+	if g.board == nil || y < 0 || y >= g.board.Height || y >= len(g.rowClues) {
 		return false
 	}
-	for x := 0; x < g.board.Width; x++ {
-		if x >= len(g.puzzle.Solution[y]) {
-			return false
-		}
-		if (g.board.Cells[y][x] == nonogram.CellFilled) != g.puzzle.Solution[y][x] {
-			return false
-		}
+	filled := make([]bool, g.board.Width)
+	for x := range filled {
+		filled[x] = g.board.Cells[y][x] == nonogram.CellFilled
 	}
-	return true
+	return equalClues(lineCluesFromFilled(filled), g.rowClues[y])
 }
 
 func (g *Game) columnSatisfied(x int) bool {
-	if g.board == nil || g.puzzle == nil || x < 0 || x >= g.board.Width {
+	if g.board == nil || x < 0 || x >= g.board.Width || x >= len(g.colClues) {
 		return false
 	}
+	filled := make([]bool, g.board.Height)
 	for y := 0; y < g.board.Height; y++ {
-		if y >= len(g.puzzle.Solution) || x >= len(g.puzzle.Solution[y]) {
-			return false
+		filled[y] = g.board.Cells[y][x] == nonogram.CellFilled
+	}
+	return equalClues(lineCluesFromFilled(filled), g.colClues[x])
+}
+
+func lineCluesFromFilled(filled []bool) []int {
+	clues := []int{}
+	run := 0
+	for _, cell := range filled {
+		if cell {
+			run++
+			continue
 		}
-		if (g.board.Cells[y][x] == nonogram.CellFilled) != g.puzzle.Solution[y][x] {
+		if run > 0 {
+			clues = append(clues, run)
+			run = 0
+		}
+	}
+	if run > 0 {
+		clues = append(clues, run)
+	}
+	if len(clues) == 0 {
+		return []int{0}
+	}
+	return clues
+}
+
+func equalClues(a, b []int) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i := range a {
+		if a[i] != b[i] {
 			return false
 		}
 	}
