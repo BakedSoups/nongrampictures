@@ -279,19 +279,19 @@ func (g *Game) updateTipsInput() {
 		g.mode = screenMainMenu
 		return
 	}
-	if tipsDemoSquare().Contains(x, y) {
+	if index, ok := tipsDemoCellAt(x, y); ok {
 		if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
-			if g.tipsDemoCell == nonogram.CellFilled {
-				g.tipsDemoCell = nonogram.CellEmpty
+			if g.tipsDemoCells[index] == nonogram.CellFilled {
+				g.tipsDemoCells[index] = nonogram.CellEmpty
 			} else {
-				g.tipsDemoCell = nonogram.CellFilled
+				g.tipsDemoCells[index] = nonogram.CellFilled
 			}
 		}
 		if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonRight) {
-			if g.tipsDemoCell == nonogram.CellMarked {
-				g.tipsDemoCell = nonogram.CellEmpty
+			if g.tipsDemoCells[index] == nonogram.CellMarked {
+				g.tipsDemoCells[index] = nonogram.CellEmpty
 			} else {
-				g.tipsDemoCell = nonogram.CellMarked
+				g.tipsDemoCells[index] = nonogram.CellMarked
 			}
 		}
 	}

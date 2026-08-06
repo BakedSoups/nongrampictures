@@ -66,7 +66,7 @@ type Game struct {
 	menuNoticeUntil time.Time
 	levelPage       int
 	tipsPage        int
-	tipsDemoCell    nonogram.CellState
+	tipsDemoCells   [16]nonogram.CellState
 
 	editor               editorState
 	editorUndo           []editorState
