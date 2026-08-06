@@ -832,9 +832,10 @@
 	    beforePixels
 	  };
 	};
-	window.requestCommunityImport = (tileSize, verticalPairs) => {
+	window.requestCommunityImport = (tileSize, verticalPairs, batch) => {
 	  window.__communityImportTileSize = Number(tileSize || 10);
 	  window.__communityImportVerticalPairs = Boolean(verticalPairs);
+	  window.__communityImportBatch = Boolean(batch);
 	  const input = document.createElement("input");
 	  input.type = "file";
 	  input.multiple = true;
@@ -847,6 +848,11 @@
 	      if (!imageFile) throw new Error("Choose a PNG sprite sheet");
 	      const image = await readImageFile(imageFile);
 	      const levels = [];
+	      const maxLevels = window.__communityImportBatch ? 32 : 1;
+	      const addLevel = (level) => {
+	        if (levels.length >= maxLevels) return;
+	        levels.push(level);
+	      };
 	      if (jsonFile) {
 	        const metadata = JSON.parse(await jsonFile.text());
 	        const entries = frameEntries(metadata);
@@ -860,7 +866,7 @@
 	          const afterFrame = frames.get(afterName);
 	          if (beforeFrame.w !== beforeFrame.h || afterFrame.w !== afterFrame.h) return;
 	          if (![8, 10, 15, 20, 32].includes(beforeFrame.w) || afterFrame.w !== beforeFrame.w) return;
-	          levels.push(puzzleFromPair(image, beforeFrame, afterFrame, beforeFrame.w, base.replace(/[_-]+/g, " "), index));
+	          addLevel(puzzleFromPair(image, beforeFrame, afterFrame, beforeFrame.w, base.replace(/[_-]+/g, " "), index));
 	        });
 	      } else {
 	        const size = Number(window.__communityImportTileSize || 10);
@@ -872,11 +878,11 @@
 	        let index = 0;
 	        if (horizontal) {
 	          for (let y = 0; y < rows; y++) for (let x = 0; x + 1 < columns; x += 2) {
-	            levels.push(puzzleFromPair(image, { x: x * size, y: y * size, w: size, h: size }, { x: (x + 1) * size, y: y * size, w: size, h: size }, size, `Imported ${index + 1}`, index++));
+	            addLevel(puzzleFromPair(image, { x: x * size, y: y * size, w: size, h: size }, { x: (x + 1) * size, y: y * size, w: size, h: size }, size, `Imported ${index + 1}`, index++));
 	          }
 	        } else {
 	          for (let y = 0; y + 1 < rows; y += 2) for (let x = 0; x < columns; x++) {
-	            levels.push(puzzleFromPair(image, { x: x * size, y: y * size, w: size, h: size }, { x: x * size, y: (y + 1) * size, w: size, h: size }, size, `Imported ${index + 1}`, index++));
+	            addLevel(puzzleFromPair(image, { x: x * size, y: y * size, w: size, h: size }, { x: x * size, y: (y + 1) * size, w: size, h: size }, size, `Imported ${index + 1}`, index++));
 	          }
 	        }
 	      }

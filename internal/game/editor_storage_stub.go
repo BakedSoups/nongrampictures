@@ -36,7 +36,7 @@ func saveCommunityData(string) bool { return false }
 
 func loadCommunityData() string { return "" }
 
-func requestCommunityImport(int, bool) bool { return false }
+func requestCommunityImport(int, bool, bool) bool { return false }
 
 func takeCommunityImport() string { return "" }
 

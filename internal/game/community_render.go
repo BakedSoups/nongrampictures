@@ -678,7 +678,8 @@ func drawSocialIcon(screen *ebiten.Image, r rect, value string) {
 func (g *Game) drawCommunityCreate(screen *ebiten.Image) {
 	drawCenteredText(screen, "CREATE", rect{x: 100, y: 202, w: 340, h: 34}, colInk)
 	drawButton(screen, communityNewButton(), "Create New Art")
-	drawButton(screen, communityImportButton(), "Import Sprite Sheet")
+	drawButton(screen, communityImportSingleButton(), "Import Sprite Sheet Single")
+	drawButton(screen, communityImportBatchButton(), "Import Sprite Sheet Batch")
 	drawButton(screen, communityImportHelpButton(), "?")
 }
 
@@ -706,8 +707,13 @@ func (g *Game) drawCommunityImportHelp(screen *ebiten.Image) {
 
 func (g *Game) drawCommunityImportPreview(screen *ebiten.Image) {
 	drawCenteredText(screen, "IMPORT PREVIEW", rect{x: 70, y: 190, w: 400, h: 30}, colInk)
-	drawCenteredText(screen, "Before", rect{x: 82, y: 224, w: 92, h: 20}, colMuted)
-	drawCenteredText(screen, "After", rect{x: 196, y: 224, w: 92, h: 20}, colMuted)
+	mode := "single import"
+	if g.importBatch {
+		mode = "batch import"
+	}
+	drawCenteredText(screen, mode, rect{x: 70, y: 214, w: 400, h: 22}, colMuted)
+	drawCenteredText(screen, "Before", rect{x: 82, y: 232, w: 92, h: 20}, colMuted)
+	drawCenteredText(screen, "After", rect{x: 196, y: 232, w: 92, h: 20}, colMuted)
 	for slot, puzzle := range g.communityImportPack.Levels {
 		if slot >= 3 || puzzle == nil {
 			break
@@ -725,13 +731,18 @@ func (g *Game) drawCommunityImportPreview(screen *ebiten.Image) {
 
 func (g *Game) drawCommunityImportSetup(screen *ebiten.Image) {
 	drawCenteredText(screen, "IMPORT PNG SHEET", rect{x: 70, y: 190, w: 400, h: 30}, colInk)
-	drawCenteredText(screen, "Choose the PNG tile size and pair layout.", rect{x: 52, y: 224, w: 436, h: 24}, colMuted)
-	drawText(screen, "Tile size", 88, 274, colMuted)
+	mode := "single: imports the first before/after pair"
+	if g.importBatch {
+		mode = "batch: imports every pair, max 32"
+	}
+	drawCenteredText(screen, mode, rect{x: 52, y: 224, w: 436, h: 24}, colMuted)
+	drawCenteredText(screen, "Choose tile size and where before/after frames sit.", rect{x: 52, y: 248, w: 436, h: 24}, colMuted)
+	drawText(screen, "Tile size", 88, 292, colMuted)
 	for index, size := range []int{8, 10, 15, 20, 32} {
 		r := communityImportSizeButton(index)
 		drawSelectedButton(screen, r, fmt.Sprintf("%d", size), g.importTileSize == size)
 	}
-	drawText(screen, "Pairs", 88, 370, colMuted)
+	drawText(screen, "Before / after placement", 88, 370, colMuted)
 	drawSelectedButton(screen, communityImportHorizontalButton(), "Before -> After", !g.importVerticalPairs)
 	drawSelectedButton(screen, communityImportVerticalButton(), "Before / After", g.importVerticalPairs)
 	drawButton(screen, communityImportChooseButton(), "Choose PNG")
@@ -1277,9 +1288,10 @@ func communityPacksButton() rect         { return rect{x: 128, y: 348, w: 284, h
 func communityCreateButton() rect        { return rect{x: 128, y: 410, w: 284, h: 46} }
 func communityMyArtButton() rect         { return rect{x: 108, y: 388, w: 324, h: 50} }
 func communityCreatorsButton() rect      { return rect{x: 108, y: 462, w: 324, h: 50} }
-func communityNewButton() rect           { return rect{x: 104, y: 270, w: 332, h: 48} }
-func communityImportButton() rect        { return rect{x: 104, y: 338, w: 278, h: 48} }
-func communityImportHelpButton() rect    { return rect{x: 392, y: 338, w: 44, h: 48} }
+func communityNewButton() rect           { return rect{x: 104, y: 260, w: 332, h: 48} }
+func communityImportSingleButton() rect  { return rect{x: 72, y: 328, w: 396, h: 48} }
+func communityImportBatchButton() rect   { return rect{x: 72, y: 396, w: 396, h: 48} }
+func communityImportHelpButton() rect    { return rect{x: 248, y: 464, w: 44, h: 48} }
 func communityLibraryArtTab() rect       { return rect{x: 54, y: 226, w: 136, h: 36} }
 func communityLibraryPacksTab() rect     { return rect{x: 194, y: 226, w: 136, h: 36} }
 func communityLibraryPublishedTab() rect { return rect{x: 334, y: 226, w: 152, h: 36} }

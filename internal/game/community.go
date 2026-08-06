@@ -233,6 +233,9 @@ func (g *Game) importCommunityPack(raw string) error {
 	}
 	imported := 0
 	for _, puzzle := range pack.Levels {
+		if imported >= 32 {
+			break
+		}
 		if puzzle == nil {
 			continue
 		}

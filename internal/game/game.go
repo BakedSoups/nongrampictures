@@ -66,6 +66,7 @@ type Game struct {
 	menuNoticeUntil time.Time
 	levelPage       int
 	tipsPage        int
+	tipsDemoTool    nonogram.Tool
 	tipsDemoCells   [16]nonogram.CellState
 
 	editor               editorState
@@ -148,6 +149,7 @@ type Game struct {
 	communityImportPack      editorPack
 	importTileSize           int
 	importVerticalPairs      bool
+	importBatch              bool
 	newArtTitle              string
 	artSearch                string
 	artSearchActive          bool
@@ -222,6 +224,7 @@ func New(puzzlePath string) (*Game, error) {
 		galleryKind:        "all",
 		gallerySort:        "new",
 		importTileSize:     10,
+		importBatch:        true,
 		editorLastX:        -1,
 		editorLastY:        -1,
 	}

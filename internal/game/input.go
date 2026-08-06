@@ -279,12 +279,21 @@ func (g *Game) updateTipsInput() {
 		g.mode = screenMainMenu
 		return
 	}
+	if justPressed && tipsFillToolButton().Contains(x, y) {
+		g.tipsDemoTool = nonogram.ToolFill
+		return
+	}
+	if justPressed && tipsMarkToolButton().Contains(x, y) {
+		g.tipsDemoTool = nonogram.ToolMark
+		return
+	}
 	if index, ok := tipsDemoCellAt(x, y); ok {
 		if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
-			if g.tipsDemoCells[index] == nonogram.CellFilled {
+			next := nonogram.TargetState(g.tipsDemoTool)
+			if g.tipsDemoCells[index] == next {
 				g.tipsDemoCells[index] = nonogram.CellEmpty
 			} else {
-				g.tipsDemoCells[index] = nonogram.CellFilled
+				g.tipsDemoCells[index] = next
 			}
 		}
 		if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonRight) {
@@ -485,7 +494,11 @@ func (g *Game) updateCommunityInput() {
 		switch {
 		case communityNewButton().Contains(x, y):
 			g.openNewArtSetup()
-		case communityImportButton().Contains(x, y):
+		case communityImportSingleButton().Contains(x, y):
+			g.importBatch = false
+			g.communityView = communityImportSetup
+		case communityImportBatchButton().Contains(x, y):
+			g.importBatch = true
 			g.communityView = communityImportSetup
 		case communityImportHelpButton().Contains(x, y):
 			g.communityView = communityImportHelp
@@ -793,7 +806,7 @@ func (g *Game) updateCommunityInput() {
 		case communityImportVerticalButton().Contains(x, y):
 			g.importVerticalPairs = true
 		case communityImportChooseButton().Contains(x, y):
-			if !requestCommunityImport(g.importTileSize, g.importVerticalPairs) {
+			if !requestCommunityImport(g.importTileSize, g.importVerticalPairs, g.importBatch) {
 				g.showCommunityNotice("import is available in the web build")
 			}
 		}

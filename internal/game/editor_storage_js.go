@@ -146,8 +146,8 @@ func loadCommunityData() string {
 	return loadStorageValue(communityLibraryKey, ".community.library")
 }
 
-func requestCommunityImport(size int, vertical bool) bool {
-	return callJS("requestCommunityImport", size, vertical)
+func requestCommunityImport(size int, vertical bool, batch bool) bool {
+	return callJS("requestCommunityImport", size, vertical, batch)
 }
 
 func takeCommunityImport() string {
