@@ -725,15 +725,15 @@ func (g *Game) drawTipsSolveDemo(screen *ebiten.Image, panel rect) {
 func (g *Game) drawTipsComplete(screen *ebiten.Image, panel rect) {
 	drawCenteredText(screen, "COMPLETE", rect{x: panel.x, y: panel.y + 24, w: panel.w, h: 24}, colAccent)
 	revealProgress := math.Mod(float64(time.Now().UnixMilli()), 4200) / 4200
-	portrait := rect{x: 190, y: 316, w: 160, h: 160}
+	portrait := rect{x: panel.x + (panel.w-160)/2, y: 316, w: 160, h: 160}
 	drawRounded(screen, rect{x: portrait.x - 6, y: portrait.y - 6, w: portrait.w + 12, h: portrait.h + 12}, 4, colGridHeavy)
 	drawRounded(screen, portrait, 3, colWhite)
 	if lion := g.levelThumbs["l4"]; len(lion) > 0 {
 		drawTipsRevealPortrait(screen, lion, portrait, revealProgress)
 	}
-	drawText(screen, "When the board matches the clues,", 104, 508, colInk)
-	drawText(screen, "the hidden picture is revealed.", 104, 536, colInk)
-	drawText(screen, "This one becomes the lion.", 104, 564, colAccent)
+	drawCenteredText(screen, "When the board matches the clues,", rect{x: panel.x + 28, y: 508, w: panel.w - 56, h: 24}, colInk)
+	drawCenteredText(screen, "the hidden picture is revealed.", rect{x: panel.x + 28, y: 536, w: panel.w - 56, h: 24}, colInk)
+	drawCenteredText(screen, "This one becomes the lion.", rect{x: panel.x + 28, y: 564, w: panel.w - 56, h: 24}, colAccent)
 }
 
 func drawTipsRevealPortrait(screen *ebiten.Image, matrix [][]assets.PixelCell, frame rect, progress float64) {
