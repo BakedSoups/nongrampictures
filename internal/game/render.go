@@ -192,21 +192,59 @@ func (g *Game) drawClues(screen *ebiten.Image) {
 		label := clueLabel(clues)
 		tx := int(g.layout.boardX-10) - text.BoundString(face, label).Dx()
 		ty := int(g.layout.boardY + float64(y)*g.layout.cellSize + g.layout.cellSize/2 + 5)
-		drawText(screen, label, tx, ty, colInk)
+		clueColor := color.Color(colInk)
+		if g.rowSatisfied(y) {
+			clueColor = colMuted
+		}
+		drawText(screen, label, tx, ty, clueColor)
 	}
 	for x, clues := range g.colClues {
 		parts := make([]string, len(clues))
 		for i, n := range clues {
 			parts[i] = fmt.Sprint(n)
 		}
+		clueColor := color.Color(colInk)
+		if g.columnSatisfied(x) {
+			clueColor = colMuted
+		}
 		cx := int(g.layout.boardX + float64(x)*g.layout.cellSize + g.layout.cellSize/2)
 		step := columnClueStep(len(parts))
 		bottomY := int(g.layout.boardY - 10)
 		startY := bottomY - (len(parts)-1)*step
 		for i, part := range parts {
-			drawText(screen, part, cx-text.BoundString(face, part).Dx()/2, startY+i*step, colInk)
+			drawText(screen, part, cx-text.BoundString(face, part).Dx()/2, startY+i*step, clueColor)
 		}
 	}
+}
+
+func (g *Game) rowSatisfied(y int) bool {
+	if g.board == nil || g.puzzle == nil || y < 0 || y >= g.board.Height || y >= len(g.puzzle.Solution) {
+		return false
+	}
+	for x := 0; x < g.board.Width; x++ {
+		if x >= len(g.puzzle.Solution[y]) {
+			return false
+		}
+		if (g.board.Cells[y][x] == nonogram.CellFilled) != g.puzzle.Solution[y][x] {
+			return false
+		}
+	}
+	return true
+}
+
+func (g *Game) columnSatisfied(x int) bool {
+	if g.board == nil || g.puzzle == nil || x < 0 || x >= g.board.Width {
+		return false
+	}
+	for y := 0; y < g.board.Height; y++ {
+		if y >= len(g.puzzle.Solution) || x >= len(g.puzzle.Solution[y]) {
+			return false
+		}
+		if (g.board.Cells[y][x] == nonogram.CellFilled) != g.puzzle.Solution[y][x] {
+			return false
+		}
+	}
+	return true
 }
 
 func columnClueStep(count int) int {
