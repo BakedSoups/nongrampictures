@@ -396,9 +396,13 @@ func (g *Game) drawReveal(screen *ebiten.Image) {
 	artRect := rect{x: 118, y: 205, w: 330, h: 330}
 	drawRounded(screen, rect{x: artRect.x - 12, y: artRect.y - 12, w: artRect.w + 24, h: artRect.h + 24}, 8, colGridHeavy)
 	drawRounded(screen, rect{x: artRect.x - 6, y: artRect.y - 6, w: artRect.w + 12, h: artRect.h + 12}, 6, colWhite)
-	colorSpread := clamp((elapsed-0.2)/2.8, 0, 1)
+	colorSpread := clamp((elapsed-0.75)/2.8, 0, 1)
 	if colorSpread > 0 {
 		drawPixelMatrixSpread(screen, g.revealPixels, g.skeletonPixels, artRect, colorSpread)
+	}
+	blackAlpha := 1 - clamp((elapsed-1.05)/1.7, 0, 1)
+	if blackAlpha > 0 {
+		drawPixelMatrix(screen, g.skeletonPixels, artRect, blackAlpha)
 	}
 
 	for _, s := range g.sparkles {
@@ -738,38 +742,25 @@ func (g *Game) drawTipsComplete(screen *ebiten.Image, panel rect) {
 	drawRounded(screen, portrait, 3, colWhite)
 	if lion := g.levelThumbs["l4"]; len(lion) > 0 {
 		if puzzle := g.levelPuzzle["l4"]; puzzle != nil {
-			drawTipsSolvedSilhouette(screen, puzzle.Solution, portrait)
 			seeds := pixelsFromRaw(puzzle.SkeletonRaw)
 			if len(seeds) == 0 {
 				seeds = tipsSilhouetteSeeds(puzzle.Solution, lion)
 			}
-			drawPixelMatrixSpread(screen, lion, seeds, portrait, revealProgress)
+			colorSpread := clamp((revealProgress-0.18)/0.72, 0, 1)
+			if colorSpread > 0 {
+				drawPixelMatrixSpread(screen, lion, seeds, portrait, colorSpread)
+			}
+			blackAlpha := 1 - clamp((revealProgress-0.36)/0.42, 0, 1)
+			if blackAlpha > 0 {
+				drawPixelMatrix(screen, seeds, portrait, blackAlpha)
+			}
 		} else {
-			drawPixelMatrixSpread(screen, lion, lion, portrait, revealProgress)
+			drawPixelMatrixSpread(screen, lion, lion, portrait, clamp((revealProgress-0.18)/0.72, 0, 1))
 		}
 	}
 	drawCenteredText(screen, "When the board matches the clues,", rect{x: panel.x + 28, y: 480, w: panel.w - 56, h: 24}, colInk)
 	drawCenteredText(screen, "the black solve reveals color.", rect{x: panel.x + 28, y: 508, w: panel.w - 56, h: 24}, colInk)
 	drawCenteredText(screen, "This one becomes the lion.", rect{x: panel.x + 28, y: 536, w: panel.w - 56, h: 24}, colAccent)
-}
-
-func drawTipsSolvedSilhouette(screen *ebiten.Image, solution [][]bool, frame rect) {
-	if len(solution) == 0 || len(solution[0]) == 0 {
-		return
-	}
-	rows := len(solution)
-	cols := len(solution[0])
-	cellSize := math.Floor(math.Min(frame.w/float64(cols), frame.h/float64(rows)))
-	offsetX := frame.x + (frame.w-cellSize*float64(cols))/2
-	offsetY := frame.y + (frame.h-cellSize*float64(rows))/2
-	for y, row := range solution {
-		for x, filled := range row {
-			if !filled {
-				continue
-			}
-			vector.DrawFilledRect(screen, float32(offsetX+float64(x)*cellSize), float32(offsetY+float64(y)*cellSize), float32(cellSize), float32(cellSize), colInk, false)
-		}
-	}
 }
 
 func tipsSilhouetteSeeds(solution [][]bool, reveal [][]assets.PixelCell) [][]assets.PixelCell {
