@@ -681,15 +681,15 @@ func tipsNextButton() rect {
 }
 
 func tipsDemoSquare() rect {
-	return rect{x: 286, y: 316, w: 132, h: 132}
+	return rect{x: 286, y: 344, w: 132, h: 132}
 }
 
 func tipsFillToolButton() rect {
-	return rect{x: 300, y: 268, w: 46, h: 46}
+	return rect{x: 314, y: 278, w: 46, h: 46}
 }
 
 func tipsMarkToolButton() rect {
-	return rect{x: 358, y: 268, w: 46, h: 46}
+	return rect{x: 372, y: 278, w: 46, h: 46}
 }
 
 func (g *Game) drawTips(screen *ebiten.Image) {
@@ -739,8 +739,14 @@ func (g *Game) drawTipsComplete(screen *ebiten.Image, panel rect) {
 	if lion := g.levelThumbs["l4"]; len(lion) > 0 {
 		if puzzle := g.levelPuzzle["l4"]; puzzle != nil {
 			drawTipsSolvedSilhouette(screen, puzzle.Solution, portrait)
+			seeds := pixelsFromRaw(puzzle.SkeletonRaw)
+			if len(seeds) == 0 {
+				seeds = tipsSilhouetteSeeds(puzzle.Solution, lion)
+			}
+			drawPixelMatrixSpread(screen, lion, seeds, portrait, revealProgress)
+		} else {
+			drawPixelMatrixSpread(screen, lion, lion, portrait, revealProgress)
 		}
-		drawTipsRevealPortrait(screen, lion, portrait, revealProgress)
 	}
 	drawCenteredText(screen, "When the board matches the clues,", rect{x: panel.x + 28, y: 480, w: panel.w - 56, h: 24}, colInk)
 	drawCenteredText(screen, "the black solve reveals color.", rect{x: panel.x + 28, y: 508, w: panel.w - 56, h: 24}, colInk)
@@ -766,20 +772,22 @@ func drawTipsSolvedSilhouette(screen *ebiten.Image, solution [][]bool, frame rec
 	}
 }
 
-func drawTipsRevealPortrait(screen *ebiten.Image, matrix [][]assets.PixelCell, frame rect, progress float64) {
-	if len(matrix) == 0 || len(matrix[0]) == 0 {
-		return
+func tipsSilhouetteSeeds(solution [][]bool, reveal [][]assets.PixelCell) [][]assets.PixelCell {
+	if len(solution) == 0 || len(reveal) == 0 {
+		return nil
 	}
-	rows := len(matrix)
-	visibleRows := int(math.Ceil(clamp(progress*1.25, 0, 1) * float64(rows)))
-	revealed := make([][]assets.PixelCell, rows)
-	for y := range matrix {
-		revealed[y] = make([]assets.PixelCell, len(matrix[y]))
-		if y < visibleRows {
-			copy(revealed[y], matrix[y])
+	rows := min(len(solution), len(reveal))
+	seeds := make([][]assets.PixelCell, rows)
+	for y := 0; y < rows; y++ {
+		cols := min(len(solution[y]), len(reveal[y]))
+		seeds[y] = make([]assets.PixelCell, cols)
+		for x := 0; x < cols; x++ {
+			if solution[y][x] {
+				seeds[y][x] = assets.PixelCell{Visible: true, Color: colInk}
+			}
 		}
 	}
-	drawPixelMatrix(screen, revealed, frame, 1)
+	return seeds
 }
 
 func (g *Game) drawTipsLionBoard(screen *ebiten.Image, board rect, progress float64, complete bool) {
@@ -901,27 +909,66 @@ type tipsSolveMove struct {
 
 func tipsLionSolveMoves(solution [][]bool) []tipsSolveMove {
 	moves := make([]tipsSolveMove, 0, len(solution)*len(solution[0]))
-	for y, row := range solution {
-		anyFilled := false
-		for _, filled := range row {
-			if filled {
-				anyFilled = true
-				break
-			}
+	if len(solution) < 10 || len(solution[0]) < 10 {
+		return tipsGenericSolveMoves(solution)
+	}
+	addMarkedRow := func(y int) {
+		for x := range solution[y] {
+			moves = append(moves, tipsSolveMove{x: x, y: y, state: nonogram.CellMarked})
 		}
-		if !anyFilled {
-			for x := range row {
-				moves = append(moves, tipsSolveMove{x: x, y: y, state: nonogram.CellMarked})
-			}
-			continue
-		}
-		for x, filled := range row {
-			if filled {
+	}
+	addFilledRun := func(y, start, end int) {
+		for x := start; x <= end && x < len(solution[y]); x++ {
+			if x >= 0 && solution[y][x] {
 				moves = append(moves, tipsSolveMove{x: x, y: y, state: nonogram.CellFilled})
 			}
 		}
+	}
+	addMarks := func(y int, xs ...int) {
+		for _, x := range xs {
+			if y >= 0 && y < len(solution) && x >= 0 && x < len(solution[y]) && !solution[y][x] {
+				moves = append(moves, tipsSolveMove{x: x, y: y, state: nonogram.CellMarked})
+			}
+		}
+	}
+
+	addMarkedRow(0)
+	addMarkedRow(1)
+	addFilledRun(2, 0, 5)
+	addMarks(2, 6, 9)
+	addFilledRun(2, 7, 8)
+	addFilledRun(3, 0, 5)
+	addMarks(3, 6, 7, 8)
+	addFilledRun(3, 9, 9)
+	addFilledRun(4, 0, 6)
+	addMarks(4, 7, 9)
+	addFilledRun(4, 8, 8)
+	addFilledRun(5, 0, 7)
+	addMarks(5, 8, 9)
+	addFilledRun(6, 0, 7)
+	addMarks(6, 8, 9)
+	addMarks(7, 0, 8, 9)
+	addFilledRun(7, 1, 7)
+	addMarks(8, 0, 2, 4, 6, 8, 9)
+	addFilledRun(8, 1, 1)
+	addFilledRun(8, 3, 3)
+	addFilledRun(8, 5, 5)
+	addFilledRun(8, 7, 7)
+	addMarks(9, 0, 2, 4, 6, 8, 9)
+	addFilledRun(9, 1, 1)
+	addFilledRun(9, 3, 3)
+	addFilledRun(9, 5, 5)
+	addFilledRun(9, 7, 7)
+	return moves
+}
+
+func tipsGenericSolveMoves(solution [][]bool) []tipsSolveMove {
+	moves := make([]tipsSolveMove, 0)
+	for y, row := range solution {
 		for x, filled := range row {
-			if !filled {
+			if filled {
+				moves = append(moves, tipsSolveMove{x: x, y: y, state: nonogram.CellFilled})
+			} else {
 				moves = append(moves, tipsSolveMove{x: x, y: y, state: nonogram.CellMarked})
 			}
 		}
@@ -942,16 +989,16 @@ func drawTipsFallbackBoard(screen *ebiten.Image, board rect) {
 
 func (g *Game) drawTipsControls(screen *ebiten.Image, panel rect) {
 	drawCenteredText(screen, "FILL SQUARES", rect{x: panel.x, y: panel.y + 24, w: panel.w, h: 24}, colInk)
-	drawText(screen, "Top-right buttons switch tools.", 96, 282, colInk)
+	drawText(screen, "Switch tools:", 96, 292, colInk)
 	g.drawTipsToolButtons(screen)
-	drawText(screen, "Mouse controls:", 96, 352, colMuted)
-	drawText(screen, "left click fills", 96, 382, colAccent)
-	drawText(screen, "right click marks X", 96, 412, colAccent)
+	drawText(screen, "Mouse controls:", 96, 356, colMuted)
+	drawText(screen, "left click fills", 96, 386, colAccent)
+	drawText(screen, "right click marks X", 96, 416, colAccent)
 	drawTipsDemoSquare(screen, tipsDemoSquare(), g.tipsDemoCells)
-	drawCenteredText(screen, "try the grid", rect{x: 274, y: 462, w: 156, h: 24}, colMuted)
-	drawText(screen, "Settings has assist.", 100, 508, colInk)
-	drawText(screen, "It can auto-correct mistakes", 100, 536, colInk)
-	drawText(screen, "whenever you want for +10s.", 100, 564, colInk)
+	drawCenteredText(screen, "try the grid", rect{x: 274, y: 490, w: 156, h: 24}, colMuted)
+	drawText(screen, "Settings has assist.", 100, 516, colInk)
+	drawText(screen, "It can auto-correct mistakes", 100, 542, colInk)
+	drawText(screen, "whenever you want for +10s.", 100, 568, colInk)
 }
 
 func (g *Game) drawTipsCommunity(screen *ebiten.Image, panel rect) {
