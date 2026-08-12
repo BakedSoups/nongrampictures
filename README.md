@@ -121,7 +121,7 @@ SUPABASE_ANON_KEY=YOUR_PUBLIC_ANON_KEY
 Setup steps:
 
 1. Create a Supabase project.
-2. For a fresh project, run the consolidated schema in `supabase/schema.sql`. The numbered files in `supabase/migrations/` are kept as migration history for existing projects.
+2. For a fresh project, run `supabase/schema.sql`, then run migrations `029_reliable_content_chat.sql` and `030_database_hardening.sql`. Existing projects should apply every numbered migration they have not yet applied. Migration 030 is the final authority for database permissions and limits.
 3. Run `scripts/write-web-config.sh` before serving `static/`; `scripts/dev-web.sh` does this automatically.
 4. Add the game URL to Supabase Auth redirect URLs and enable email magic links.
 5. Optional: configure Google OAuth using the values in `.env.example`.

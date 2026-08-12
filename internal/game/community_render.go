@@ -222,10 +222,7 @@ func (g *Game) drawCommunityGalleryPack(screen *ebiten.Image) {
 			preview = level.Puzzle.RevealRaw
 		}
 		drawCommunityArtThumbnail(screen, preview, rect{x: r.x + 7, y: r.y + 7, w: 58, h: 58})
-		title := level.Title
-		if len(title) > 12 {
-			title = title[:12]
-		}
+		title := truncateText(level.Title, 16)
 		drawCenteredText(screen, title, rect{x: r.x + 70, y: r.y + 8, w: r.w - 76, h: 28}, colInk)
 		drawCenteredText(screen, "play", rect{x: r.x + 70, y: r.y + 38, w: r.w - 76, h: 26}, colAccent)
 	}
@@ -423,10 +420,7 @@ func (g *Game) drawCommunityCreatorProfile(screen *ebiten.Image) {
 		if level.Puzzle != nil {
 			drawCommunityArtThumbnail(screen, level.Puzzle.RevealRaw, rect{x: r.x + 7, y: r.y + 7, w: 58, h: 58})
 		}
-		title := level.Title
-		if len(title) > 12 {
-			title = title[:12]
-		}
+		title := truncateText(level.Title, 16)
 		drawCenteredText(screen, title, rect{x: r.x + 70, y: r.y + 8, w: r.w - 76, h: 28}, colInk)
 		drawCenteredText(screen, "play", rect{x: r.x + 70, y: r.y + 38, w: r.w - 76, h: 26}, colAccent)
 	}

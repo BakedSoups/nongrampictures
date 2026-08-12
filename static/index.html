@@ -154,6 +154,14 @@
 	window.__pendingCommunityPublishedPackID = "";
 	window.__pendingTextPaste = "";
 	const clipboardTarget = document.getElementById("clipboard");
+	let activeColorInput = null;
+	const dismissColorPicker = () => {
+	  if (!activeColorInput) return;
+	  const input = activeColorInput;
+	  activeColorInput = null;
+	  input.blur();
+	  input.remove();
+	};
 	const focusGameCanvas = () => {
 	  const canvas = document.querySelector("canvas");
 	  if (!canvas) return;
@@ -162,10 +170,14 @@
 	};
 	const installCanvasFocus = () => {
 	  const canvas = document.querySelector("canvas");
-	  if (!canvas) return;
+	  if (!canvas || canvas.dataset.focusInstalled === "true") return;
+	  canvas.dataset.focusInstalled = "true";
 	  canvas.tabIndex = 0;
 	  canvas.oncontextmenu = (event) => event.preventDefault();
-	  canvas.addEventListener("pointerdown", () => canvas.focus({ preventScroll: true }));
+	  canvas.addEventListener("pointerdown", () => {
+	    dismissColorPicker();
+	    canvas.focus({ preventScroll: true });
+	  });
 	};
 	new MutationObserver(installCanvasFocus).observe(document.body, { childList: true });
 	clipboardTarget.addEventListener("paste", (event) => {
@@ -683,7 +695,8 @@
 	  }
 	};
 	window.postCommunityChat = async (kind, id, body) => {
-	  const { url } = communityConfig();
+	  const { url, key } = communityConfig();
+	  if (!url || !key || !kind || !id) return setCommunityResult("community cloud is not configured yet");
 	  const session = await validCommunitySession().catch((error) => { setCommunityResult(error.message); return null; });
 	  if (!session?.access_token) return setCommunityResult("sign in to chat");
 	  try {
@@ -691,9 +704,12 @@
 	      method: "POST", headers: communityHeaders(session.access_token),
 	      body: JSON.stringify({ p_kind: kind, p_content_id: id, p_body: String(body || "").slice(0, 220) })
 	    });
-	    const result = await response.json();
-	    if (!response.ok) throw new Error(result.message || "Could not send chat");
-	    window.requestCommunityChat(kind, id);
+	    const responseBody = await response.text();
+	    let result = {};
+	    try { result = responseBody ? JSON.parse(responseBody) : {}; } catch (_) {}
+	    if (!response.ok) throw new Error(result.message || result.error_description || responseBody || "Could not send chat");
+	    await window.requestCommunityChat(kind, id);
+	    setCommunityResult("message sent");
 	  } catch (error) {
 	    setCommunityResult(error.message || "could not send chat");
 	  }
@@ -895,16 +911,35 @@
 		  input.click();
 		};
     window.requestEditorColorPicker = (initial) => {
+	  dismissColorPicker();
       const input = document.createElement("input");
       input.type = "color";
+	  input.setAttribute("aria-hidden", "true");
+	  input.style.position = "fixed";
+	  input.style.left = "-10000px";
+	  input.style.top = "-10000px";
       input.value = /^#[0-9a-f]{6}$/i.test(initial) ? initial : "#485c79";
+	  const finish = () => {
+	    if (activeColorInput === input) activeColorInput = null;
+	    input.remove();
+	    focusGameCanvas();
+	  };
       input.oninput = () => {
         window.__pendingEditorColor = input.value;
       };
       input.onchange = () => {
         window.__pendingEditorColor = input.value;
+		finish();
       };
-      input.click();
+	  input.addEventListener("cancel", finish, { once: true });
+	  document.body.appendChild(input);
+	  activeColorInput = input;
+	  try {
+	    if (typeof input.showPicker === "function") input.showPicker();
+	    else input.click();
+	  } catch (_) {
+	    input.click();
+	  }
     };
 	window.takeCommunityCoverImport = () => {
 	  const value = window.__pendingCommunityCoverImport || "";

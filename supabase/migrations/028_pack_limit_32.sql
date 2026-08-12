@@ -114,14 +114,17 @@ begin
     where owner_id = uid and local_id = level_local_id;
 
     if target_level.id is null then
-      insert into public.levels (owner_id, local_id, title, description, status, current_version)
-      values (uid, level_local_id, level_title, level_description, 'pack_only', 1)
+      insert into public.levels (owner_id, local_id, title, description, visibility, status, current_version)
+      values (uid, level_local_id, level_title, level_description, 'pack_only', 'published', 1)
       returning * into target_level;
       next_version := 1;
     else
       next_version := target_level.current_version + 1;
       update public.levels
-      set title = level_title, description = level_description, status = case when status = 'published' then status else 'pack_only' end, current_version = next_version, updated_at = now()
+      set title = level_title, description = level_description,
+          status = 'published',
+          visibility = case when visibility = 'public' then visibility else 'pack_only' end,
+          current_version = next_version, updated_at = now()
       where id = target_level.id
       returning * into target_level;
     end if;
@@ -254,14 +257,17 @@ begin
         where owner_id = auth.uid() and local_id = level_local_id;
 
         if target_level.id is null then
-          insert into public.levels (owner_id, local_id, title, description, status, current_version)
-          values (auth.uid(), level_local_id, level_title, level_description, 'pack_only', 1)
+          insert into public.levels (owner_id, local_id, title, description, visibility, status, current_version)
+          values (auth.uid(), level_local_id, level_title, level_description, 'pack_only', 'published', 1)
           returning * into target_level;
           next_version := 1;
         else
           next_version := target_level.current_version + 1;
           update public.levels
-          set title = level_title, description = level_description, status = case when status = 'published' then status else 'pack_only' end, current_version = next_version, updated_at = now()
+          set title = level_title, description = level_description,
+              status = 'published',
+              visibility = case when visibility = 'public' then visibility else 'pack_only' end,
+              current_version = next_version, updated_at = now()
           where id = target_level.id
           returning * into target_level;
         end if;
